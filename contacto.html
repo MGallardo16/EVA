@@ -34,6 +34,138 @@
   </div>
 </nav>
 
+<!-- Contenedor principal -->
+<div class="container-global mt-5">
+  <!-- caja de fondo para respetar el diseño -->
+  <div class="behind-box">
+    <div class="w-100">
+      <!-- Titulo centrado en color rojo -->
+      <h2 class="text-center text-danger mb-4">Contacto</h2>
+
+      <!-- Formulario con validación Bootstrap -->
+      <form id="form-contacto" class="needs-validation" novalidate>
+        
+        <!-- Campo del ingreso de nombre -->
+        <div class="mb-3">
+          <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+          <input type="text"
+                 class="form-control"
+                 id="nombre"
+                 name="nombre"
+                 maxlength="100"
+                 required>
+            <div class="invalid-feedback">
+              El nombre es OBLIGATORIO y no debe de superar los 100 caracteres.
+            </div>
+        </div>
+
+        <!-- Campo del ingreso de correo -->
+        <div class="mb-3">
+          <label for="correo" class="form-label">Correo <span class="text-danger">*</span></label>
+          <input type="email"
+                 class="form-control"
+                 id="correo"
+                 name="correo"
+                 maxlength="100"
+                 required
+                 pattern="^[a-zA-Z0-9._%+-]+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$">
+                <!-- Este pattern permite solamente correos con @duoc.cl, @profesor.duoc.cl y @gmail.com  --> 
+                 <div class="invalid-feedback">
+                  Ingresa un correo válido! (@duoc.cl, @profesor.duoc.cl o @gmail.com).
+                 </div>
+        </div>
+
+        <!-- Campo del ingreso de comentario -->
+        <div class="mb-3">
+          <label for="comentario" class="form-label">Comentario <span class="text-danger">*</span></label>
+          <textarea class="form-control"
+                    id="comentario"
+                    name="comentario"
+                    maxlength="500"
+                    required></textarea>
+          <div class="invalid-feedback">
+            El comentario es OBLIGATORIO y no debe de superar los 500 caracteres.
+          </div>
+        </div>
+
+        <!-- Campo del botón de envío -->
+        <div class="text-center">
+          <button type="submit" class="btn btn-danger px-4">Enviar</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <div id="comentarios-guardados" class="mt-4">
+
+  </div>
+
+</div>
+
+  <script>
+    (function (){
+      'use strict'
+      const form = document.getElementById('form-contacto');
+
+      form.addEventListener('submit', event => {
+        if(!form.checkValidity()){
+          event.preventDefault();
+          event.stopPropagation();
+        } else{
+          event.preventDefault();
+          const nombre = document.getElementById('nombre').value;
+          const correo = document.getElementById('correo').value;
+          const comentario = document.getElementById('comentario').value;
+          
+          const mensajes = JSON.parse(localStorage.getItem('mensajesContacto')) || [];
+          mensajes.push({nombre, correo, comentario, fecha : new Date().toLocaleString()});
+          localStorage.setItem('mensajesContacto', JSON.stringify(mensajes));
+
+          alert("Tu comentario fue guardado correctamente.")
+
+        }
+        form.classList.add('was-validated');
+      }, false);
+    })()
+  
+    function mostrarComentarios(){
+      const contenedor = document.getElementById('comentarios-guardados');
+      const mensajes = JSON.parse(localStorage.getItem('mensajesContacto')) || [];
+      contenedor.innerHTML = "<h3>Comentarios enviados:</h3>";
+      mensajes.forEach(m  => {
+        contenedor.innerHTML += `
+        <div class="border p-2 mb-2">
+          <strong>${m.nombre}</strong> (${m.correo})<br>
+          <em>${m.fecha}</em><br>
+          <p>${m.comentario}</p>
+        </div>
+      `;
+      });
+    }
+    mostrarComentarios();
+  
+  //Se definirá una función
+  (function () {
+    //Aquí se activa el "modo estricto" de JS, evitando errores silenciosos
+    'use strict'
+    //Aquí seleccionamos todos los formularios que tengan la clase "needs-validation"
+    const forms = document.querySelectorAll('.needs-validation')
+    Array.from(forms).forEach(form => { //convierte la lista de forms en un array
+      form.addEventListener('submit', event => { //Se agrega un listener al evento submit de cada form.
+        //Verifica si el form cumple con las reglas de validación
+        if (!form.checkValidity()) {
+          event.preventDefault() //Si no es valido, evita que se envíe
+          event.stopPropagation() //Detiene la programación del evento.
+        }
+        //Agrega la clase "was-validated" al form
+        //Bootstrap usa esta clase para mostrar los mensajes de error en los campos que no
+        //cumplen las reglas.
+        form.classList.add('was-validated')
+      }, false)
+    })
+  })() //Aquí se ejecuta inmediatamente la función al cargar la página.
+</script>
 
   <script src="js/cerrarSesion.js"></script>
 </body>
