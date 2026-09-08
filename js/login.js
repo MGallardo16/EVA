@@ -177,7 +177,7 @@ formulario_login.addEventListener("submit", function(e) {
     // Lee los administradores de localStorage (o usa el admin por defecto)
     let administradores = JSON.parse(localStorage.getItem("administradores")) || [
         { id: 1, nombre_usuario: "SuperAdmin",
-            correo: "admin@correo.com",
+            correo: "admin@gmail.com",
             contraseña: "admin123"
         },
         {
