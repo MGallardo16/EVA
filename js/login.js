@@ -38,24 +38,12 @@ let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [
 
 //De esta forma simplemente damos una cantidad limitada de dominios para le ingreso a la página.
 function dominioValido(correo) {
-    return correo.ensWith("@gmail.com") 
+    return correo.endsWith("@gmail.com") 
     || correo.endsWith("@duocuc.cl") 
     || correo.endsWith("@profesor.duocuc.cl");
 }
 
-if (!dominioValido(correo)) {
-    alert("El correo debe ser de un dominio válido: @gmail.com, @duocuc.cl o @profesor.duocuc.cl");
-    return;
-}
-
 //--------------------------------------------------------------
-// EVENTOS DE ANIMACIÓN
-// Se asignan los eventos de click a los botones correspondientes para ejecutar las animaciones.
-// El evento resize ajusta la interfaz si la pantalla cambia de tamaño (responsivo).
-document.getElementById("btn-registrarse").addEventListener("click", animacionRegistrarse)
-document.getElementById("btn-iniciar-sesión").addEventListener("click", animacionIniciarSesion)
-window.addEventListener("resize", anchoPag);
-
 // Variables que seleccionan los contenedores e inputs del HTML mediante sus clases.
 var container_login_registro = document.querySelector(".container-login-registro");
 
@@ -63,6 +51,16 @@ var formulario_login = document.querySelector(".form-login");
 var formulario_registro = document.querySelector(".form-registro");
 var behind_box_login = document.querySelector(".behind-box-login");
 var behind_box_registro = document.querySelector(".behind-box-registro");
+
+
+// EVENTOS DE ANIMACIÓN
+// Se asignan los eventos de click a los botones correspondientes para ejecutar las animaciones.
+// El evento resize ajusta la interfaz si la pantalla cambia de tamaño (responsivo).
+document.getElementById("btn-registrarse").addEventListener("click", animacionRegistrarse)
+document.getElementById("btn-iniciar-sesión").addEventListener("click", animacionIniciarSesion)
+window.addEventListener("resize", anchoPag);
+
+
 
 //--------------------------------------------------------------
 // Función que detecta el ancho de la pantalla y acomoda los formularios según el tamaño.
@@ -97,7 +95,7 @@ function animacionIniciarSesion(){
     }else{
         formulario_registro.style.display = "none";
         container_login_registro.style.left = "0px";
-        formulario_login.style = "block";
+        formulario_login.style.display = "block";
         behind_box_registro.style.display = "block";
         behind_box_login.style.display = "none";      
     }
@@ -138,7 +136,11 @@ formulario_registro.addEventListener("submit", function(e) {
     const correo = inputs[1].value;
     const contraseña = inputs[2].value;
 
-
+    // Evalúa si el correo ingresado termina en los dominios permitidos
+    if (!dominioValido(correo)) {
+        alert("El correo debe ser de un dominio válido: @gmail.com, @duocuc.cl o @profesor.duocuc.cl");
+        return; // El 'return' aquí frena la función para que NO cree el usuario si el correo es inválido
+    }
 
     // find() busca en el array si ya existe un usuario creado con ese mismo correo.
     const existe = usuarios.find(u => u.correo === correo);
