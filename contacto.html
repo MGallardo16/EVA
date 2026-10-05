@@ -35,7 +35,7 @@
 </nav>
 
 <!-- Contenedor principal -->
-<div class="container-global mt-5">
+<div class="container mt-5">
   <!-- caja de fondo para respetar el diseño -->
   <div class="behind-box">
     <div class="w-100">
@@ -54,7 +54,7 @@
                  name="nombre"
                  maxlength="100"
                  required>
-            <div class="invalid-feedback">
+            <div class="invalid-feedback" style="max-width: 80%; text-align: center;">
               El nombre es OBLIGATORIO y no debe de superar los 100 caracteres.
             </div>
         </div>
@@ -68,9 +68,9 @@
                  name="correo"
                  maxlength="100"
                  required
-                 pattern="^[a-zA-Z0-9._%+-]+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$">
+                 pattern="^[a-zA-Z0-9._%+\\-]+@(duoc.cl|profesor.duoc.cl|gmail.com)$">
                 <!-- Este pattern permite solamente correos con @duoc.cl, @profesor.duoc.cl y @gmail.com  --> 
-                 <div class="invalid-feedback">
+                 <div class="invalid-feedback" style="max-width: 80%; text-align: center;">
                   Ingresa un correo válido! (@duoc.cl, @profesor.duoc.cl o @gmail.com).
                  </div>
         </div>
@@ -83,7 +83,7 @@
                     name="comentario"
                     maxlength="500"
                     required></textarea>
-          <div class="invalid-feedback">
+          <div class="invalid-feedback" style="max-width: 80%; text-align: center;">
             El comentario es OBLIGATORIO y no debe de superar los 500 caracteres.
           </div>
         </div>
@@ -122,10 +122,13 @@
           mensajes.push({nombre, correo, comentario, fecha : new Date().toLocaleString()});
           localStorage.setItem('mensajesContacto', JSON.stringify(mensajes));
 
-          alert("Tu comentario fue guardado correctamente.")
+          alert("Tu comentario fue guardado correctamente.");
+          mostrarComentarios();
 
+  // limpiar formulario y quitar validación visual
+          form.reset();
+          form.classList.remove("was-validated");
         }
-        form.classList.add('was-validated');
       }, false);
     })()
   

@@ -58,5 +58,10 @@ function mostrarDestacados(){
     });
 }
 
+const usuarioLogue = localStorage.getItem("usuarioLogueado");
+const btnLogin = document.getElementById("btn-login");
+if(usuarioLogue && btnLogin){
+  btnLogin.classList.add("d-none");
+}
 //Llama a la función cada que se carga la página.
 mostrarDestacados();

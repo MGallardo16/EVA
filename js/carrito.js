@@ -88,5 +88,25 @@ tdBorrar.appendChild(producBorrar);
     `;
 }
 
+document.addEventListener('DOMContentLoaded',() => {
+    const btnSimular= document.getElementById("btn-simular-compra");
+    if(btnSimular){
+        btnSimular.addEventListener('click', () => {
+            let carrito= JSON.parse(localStorage.getItem("carrito")) || [];
+            if (carrito.length === 0) {
+                alert("El carrito está vacío. Agrega productos antes de simular la compra.");
+                return;
+
+        }
+        alert("¡Listo! Tus pedidos estarán en camino muy pronto.");
+            
+            localStorage.removeItem("carrito");
+            carrito = [];
+            productosHtml();
+        
+        
+    });
+    }
+});
 
 document.addEventListener('DOMContentLoaded', productosHtml);

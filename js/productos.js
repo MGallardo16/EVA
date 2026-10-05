@@ -259,7 +259,7 @@ function agregarAlCarrito(id) {
     };
 
     localStorage.setItem("carrito", JSON.stringify(carrito));
-    alert('${producto.nombre} ha sido agregado al carrito');
+    alert('El producto ha sido agregado al carrito');
     
 }
 

@@ -236,3 +236,29 @@ main{
     color: #dc3545;
     text-transform: uppercase; 
 }
+
+.form-control {
+  background-color: #2c2c2c; /* gris oscuro */
+  color: #fff;              /* texto blanco */
+  border: 1px solid #444;
+}
+
+.form-control:focus {
+  border-color: #0d6efd; /* azul Bootstrap */
+  box-shadow: 0 0 5px rgba(13,110,253,0.5);
+}
+
+.invalid-feedback {
+  max-width: 100%;             /* nunca más ancho que el input */
+  background-color: #2c2c2c;   /* fondo oscuro */
+  color: #dc3545;              /* rojo igual al borde del input */
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 0 0 4px 4px;  /* esquinas redondeadas solo abajo */
+  margin-top: -1px;            /* se pega al borde inferior del input */
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.5); /* sombra corta y roja */
+}
+
+
+
+
