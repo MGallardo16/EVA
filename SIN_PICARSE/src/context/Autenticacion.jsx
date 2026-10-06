@@ -25,6 +25,7 @@ export function AuthProvider({ children }) {
       const adminData = { ...adminValido, rol: "admin" };
       setUsuario(adminData);
       localStorage.setItem("usuarioActivo", JSON.stringify(adminData));
+      localStorage.setItem("isLoggedIn", "true");
       alert(`¡Bienvenido/a Administrador ${adminValido.nombre_usuario}!`);
       return true;
     }
@@ -34,6 +35,7 @@ export function AuthProvider({ children }) {
       const userData = { ...usuarioValido, rol: "cliente" };
       setUsuario(userData);
       localStorage.setItem("usuarioActivo", JSON.stringify(userData));
+      localStorage.setItem("isLoggedIn", "true");
       alert(`¡Bienvenido/a ${usuarioValido.nombre_usuario}!`);
       return true;
     }
@@ -65,8 +67,9 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUsuario(null);
     localStorage.removeItem("usuarioActivo");
+    localStorage.removeItem("isLoggedIn");
     alert("Has cerrado sesión con éxito.");
-    window.location.href = "/"; // redirige al Home
+    // Aquí no usamos window.location.href, el Dashboard.jsx se encarga de redirigir con navigate("/")
   };
 
   return (

@@ -1,15 +1,21 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/Autenticacion";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { login, registro } = useContext(AuthContext);
   const [modo, setModo] = useState("login"); // "login" o "registro"
+  const navigate = useNavigate();
 
   const handleLogin = (e) => {
     e.preventDefault();
     const correo = e.target.correo.value;
     const contraseña = e.target.contraseña.value;
-    login(correo, contraseña);
+    const ok = login(correo, contraseña);
+    if (ok) {
+      localStorage.setItem("isLoggedIn", "true");
+      navigate("/dashboard"); // redirige al panel
+    }
   };
 
   const handleRegistro = (e) => {
@@ -17,8 +23,10 @@ export default function Login() {
     const nombre = e.target.nombre.value;
     const correo = e.target.correo.value;
     const contraseña = e.target.contraseña.value;
-    registro(nombre, correo, contraseña);
-    setModo("login"); // vuelve al login después de registrar
+    const ok = registro(nombre, correo, contraseña);
+    if (ok) {
+      setModo("login"); // vuelve al login después de registrar
+    }
   };
 
   return (

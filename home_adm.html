@@ -16,22 +16,29 @@
         <h4>Panel de Administrador</h4>
 
         <div class="nav flex-column nav-pills">
-          <button class="text-start text-center" onclick="cargarTablaAdminUsers()">Gestion de usuarios</button>
-          <button class="text-start text-center" onclick="cargarTablaAdminProd()">Gestion de productos</button>
-          <button class="text-start text-center" onclick="cargarTablaAdministradores()">Gestion de administradores</button>
+          <button class="text-start text-center" onclick="cargarTablaAdminUsers()">Gestión de usuarios</button>
+          <button class="text-start text-center" onclick="cargarTablaAdminProd()">Gestión de productos</button>
+          <button class="text-start text-center" onclick="cargarTablaAdministradores()">Gestión de administradores</button>
+          <button class="text-start text-center" onclick="cargarTablaOrdenes()">Órdenes / Boletas</button>
+          <button class="text-start text-center" onclick="cargarTablaCategorias()">Categorías</button>
+          <button class="text-start text-center" onclick="cargarTablaReportes()">Reportes</button>
+          <button class="text-start text-center" onclick="cargarPerfilAdmin()">Perfil</button>
         </div>
-      </div>
+
 
       <div>
         <button class="btn-cerrarSesion" onclick="cerrarSesion()">Cerrar Sesión</button>
       </div>
-    </div>
-
-    <main id="contenido-principal" class="flex-grow-1 p-4 w-100" style="max-height: 100vh; overflow: hidden;">
-      <p>Selecciona una opción del menú.</p>
-    </main>
+    
+    
+    
 
   </div>
+  </div>
+
+     <div id="contenido-principal" class="flex-grow-1 p-4 w-100" style="max-height: 100vh; overflow: hidden;">
+
+    </div>
 
 <script src="js/cerrarSesion.js"></script>
 <script src="js/administracion.js"></script>

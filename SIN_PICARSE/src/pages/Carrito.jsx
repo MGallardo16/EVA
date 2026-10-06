@@ -13,7 +13,7 @@ export default function Carrito() {
   } = useContext(CartContext);
 
   if (carrito.length === 0) {
-    return <p className="text-center">El carrito está vacío</p>;
+    return <p className="text-center mt-5">El carrito está vacío</p>;
   }
 
   return (
@@ -79,7 +79,7 @@ export default function Carrito() {
         className="btn btn-success"
         onClick={simularCompra}
       >
-        Simular compra
+        ¡Comprar!
       </button>
     </div>
   );
