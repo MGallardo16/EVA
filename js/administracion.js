@@ -1,30 +1,19 @@
 function cargarTablaAdminProd() {
-    // Localizamos la zona de la pantalla donde pondremos la tabla
     const contenedor = document.getElementById("contenido-principal");
 
     if (!contenedor) {
         console.error("No se encontró el contenedor 'contenido-principal' en el HTML.");
         return;
     }
-
-    // Intentamos obtener la lista del almacenamiento del navegador.
-    // Si es la primera vez que se entra, tomamos el arreglo 'productos'.
     let datosProductos = JSON.parse(localStorage.getItem("productos"));
-
     if (!datosProductos && typeof productos !== "undefined") {
         datosProductos = productos;
-        // Guardamos copia en el navegador
         localStorage.setItem("productos", JSON.stringify(productos));
     }
-
-    // Si aún no hay datos disponibles, inicializamos una lista vacía
     if (!datosProductos) {
         datosProductos = [];
     }
-
-    // Construcción del bloque HTML de las filas
     let filas = "";
-
     if (datosProductos.length === 0) {
         filas = `<tr><td colspan="3" class="text-center">No hay productos disponibles.</td></tr>`;
     } else {
@@ -38,8 +27,6 @@ function cargarTablaAdminProd() {
             `;
         });
     }
-
-    // 4. Inyección de Bootstrap dentro del contenedor
     contenedor.innerHTML = `
         <div class="container-fluid">
             <h3 class="mb-4 text-dark">Gestión de Productos</h3>
@@ -63,18 +50,12 @@ function cargarTablaAdminProd() {
 }
 
 function cargarTablaAdminUsers() {
-    // Localizamos la zona de la pantalla donde pondremos la tabla
     const contenedor = document.getElementById("contenido-principal");
-
     if (!contenedor) {
         console.error("No se encontró el contenedor 'contenido-principal' en el HTML.");
         return;
     }
-
-    // Intentamos obtener la lista del almacenamiento del navegador.
-    // Si es la primera vez que se entra, tomamos el arreglo 'usuarios'.
     let usuarios = JSON.parse(localStorage.getItem("usuarios"));
-
     if (!usuarios || usuarios.length === 0) {
         usuarios = [
             {
@@ -108,13 +89,9 @@ function cargarTablaAdminUsers() {
                 contraseña: "gonzaPass789"
             }
         ];
-        // Lo guardamos en localStorage para inicializarlo
         localStorage.setItem("usuarios", JSON.stringify(usuarios));
     }
-
-    // Construcción del bloque HTML de las filas
     let filas = "";
-
     usuarios.forEach((user) => {
         filas += `
             <tr>
@@ -128,12 +105,9 @@ function cargarTablaAdminUsers() {
             </tr>
         `;
     });
-
-    // 4. Inyección de Bootstrap dentro del contenedor
     contenedor.innerHTML = `
         <div class="p-4 w-100">
             <h3 class="mb-3 text-dark">Gestión de Usuarios</h3>
-
             <div class="border border-secondary rounded shadow-sm" style="max-height: 300px; overflow-y: auto;">
                 <table class="table table-dark table-striped table-hover align-middle mb-0 text-start">
                     <thead style="position: sticky; top: 0; z-index: 2;" class="table-dark border-bottom border-secondary">
@@ -150,7 +124,6 @@ function cargarTablaAdminUsers() {
                     </tbody>
                 </table>
             </div>
-
             <div class="row align-items-center g-4 mt-1">
                 <div class="col-md-5">
                     <div class="card bg-dark text-white border-secondary p-3 shadow-sm">
@@ -164,7 +137,6 @@ function cargarTablaAdminUsers() {
                         </form>
                     </div>
                 </div>
-
                 <div class="col-md-7">
                     <div class="card bg-dark text-white border-secondary p-3 shadow-sm">
                         <h5 class="card-title mb-3">Agregar Nuevo Usuario</h5>
@@ -185,7 +157,6 @@ function cargarTablaAdminUsers() {
             </div>
         </div>
     `;
-
     const formEliminarUser = document.getElementById("form-eliminar-usuario");
         formEliminarUser.addEventListener("submit", function(e){
         e.preventDefault();
@@ -208,16 +179,10 @@ function cargarTablaAdminUsers() {
         if (formCrearUser) {
             formCrearUser.addEventListener("submit", function(e) {
             e.preventDefault();
-
-            // 1. Obtener valores de los campos
             const nombre = document.getElementById("nuevo-nombre").value;
             const correo = document.getElementById("nuevo-correo").value;
             const contraseña = document.getElementById("nueva-pass").value;
-
-            // 2. Generar un ID automático (el último ID + 1)
             const nuevoId = usuarios.length > 0 ? Math.max(...usuarios.map(a => a.id)) + 1 : 1;
-
-            // 3. Crear el nuevo objeto admin
             const nuevoUsuario = {
             id: nuevoId,
             nombre_usuario: nombre,
@@ -225,31 +190,20 @@ function cargarTablaAdminUsers() {
             contraseña: contraseña
             }
         });
-
-        // Agrega al arreglo y guardar en localStorage
         usuarios.push(nuevoUsuario);
         localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
         alert(`Usuario ${nombre} creado correctamente`);
-
-        // Volver a cargar la tabla para ver el cambio
         cargarTablaAdminUsers();
     };
 }
 
 function cargarTablaAdministradores() {
-    // Localizamos la zona de la pantalla donde pondremos la tabla
     const contenedor = document.getElementById("contenido-principal");
-
     if (!contenedor) {
         console.error("No se encontró el contenedor 'contenido-principal' en el HTML.");
         return;
     }
-
-    // Intentamos obtener la lista del almacenamiento del navegador.
-    // Si es la primera vez que se entra, tomamos el arreglo 'productos'.
     let admins = JSON.parse(localStorage.getItem("administradores"));
-
     if (!admins || admins.length === 0) {
         admins = [
             { id: 1, nombre_usuario: "SuperAdmin",
@@ -275,18 +229,12 @@ function cargarTablaAdministradores() {
                 contraseña: "eliminarAdmin123"
             }
         ];
-        // Lo guardamos en localStorage para inicializarlo
         localStorage.setItem("administradores", JSON.stringify(admins));
     }
-
-    // Si aún no hay datos disponibles, inicializamos una lista vacía
     if (!admins) {
         admins = [];
     }
-
-    // Construcción del bloque HTML de las filas
     let filas = "";
-
     admins.forEach(admin => {
         filas += `
             <tr>
@@ -299,12 +247,9 @@ function cargarTablaAdministradores() {
             </tr>
         `;
     });
-
-    // 4. Inyección de Bootstrap dentro del contenedor
     contenedor.innerHTML = `
         <div class="p-4 w-100 text-white">
             <h3 class="mb-4">Gestión de Administradores</h3>
-
             <div class="border border-secondary rounded shadow-sm mb-4" style="max-height: 250px; overflow-y: auto;">
                 <table class="table table-dark table-striped table-hover align-middle mb-0 text-start">
                     <thead style="position: sticky; top: 0; z-index: 2;" class="table-dark border-bottom border-secondary">
@@ -320,7 +265,6 @@ function cargarTablaAdministradores() {
                     </tbody>
                 </table>
             </div>
-
             <div class="row align-items-center g-4">
                 <div class="col-md-5">
                     <div class="card bg-dark text-white border-secondary p-3 shadow-sm">
@@ -352,57 +296,39 @@ function cargarTablaAdministradores() {
                         </form>
                     </div>
                 </div>
-            </div>
-
-            
+            </div>  
         </div>
     `;
-
     const formCrearAdmin = document.getElementById("form-crear-admin");
     if (formCrearAdmin) {
         formCrearAdmin.addEventListener("submit", function(e) {
             e.preventDefault();
-
-            // 1. Obtener valores de los campos
             const nombre = document.getElementById("nuevo-nombre").value;
             const correo = document.getElementById("nuevo-correo").value;
             const contraseña = document.getElementById("nueva-pass").value;
-
-            // 2. Generar un ID automático (el último ID + 1)
             const nuevoId = admins.length > 0 ? Math.max(...admins.map(a => a.id)) + 1 : 1;
-
-            // 3. Crear el nuevo objeto admin
             const nuevoAdmin = {
             id: nuevoId,
             nombre_usuario: nombre,
             correo: correo,
             contraseña: contraseña
             };
-
-            // Agrega al arreglo y guardar en localStorage
             admins.push(nuevoAdmin);
             localStorage.setItem("administradores", JSON.stringify(admins));
-
             alert(`Administrador ${nombre} creado correctamente`);
-
-            // Volver a cargar la tabla para ver el cambio
             cargarTablaAdministradores();
         });
     }
-    
-
     const formEliminar = document.getElementById("form-eliminar-admin");
     if(formEliminar){
         formEliminar.addEventListener("submit", function(e){
             e.preventDefault();
             const idEliminar = parseInt(document.getElementById("admin-id").value);
-
             const index = admins.findIndex(a => a.id === idEliminar);
             if(index !== -1){
                 admins.splice(index, 1);
                 localStorage.setItem("administradores", JSON.stringify(admins));
                 alert(`Administrador con id ${idEliminar} eliminado correctamente`);
-
                 cargarTablaAdministradores();
             }else{
                 alert(`No se encontro ningun administrador con el id ${idEliminar}`);

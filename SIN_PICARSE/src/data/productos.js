@@ -1,4 +1,4 @@
-const productos =[
+export const productos =[
     {
     id: 1,
     nombre: "Monopoly Banco Electrónico",
@@ -177,77 +177,3 @@ const productos =[
           descripcion: "Dominó Clásico Doble 6 en Caja de Madera (Set of 28 Dominoes) – ¡Tradición y Estrategia para Toda la Familia! <br> Disfruta de uno de los juegos de mesa más populares y tradicionales de la historia con este Set Clásico de Dominó Doble 6. Con fichas resistentes y una elegante caja contenedora de madera con tapa deslizable, este conjunto es perfecto para reuniones familiares, tardes de juego entre amigos o para llevar de viaje a cualquier lugar."
       }
     ];
-if (!localStorage.getItem("productos")) {
-    localStorage.setItem("productos", JSON.stringify(productos));
-}
-let carrito = [];
-function mostrarProductos() {
-    const contenedor = document.getElementById("producto-lista");
-    contenedor.innerHTML = "";
-    productos.forEach(producto => {
-        contenedor.innerHTML+= `
-      <div class="col-md-4 mb-4">
-        <div class="card bg-dark text-light h-100">
-          <img src="${producto.imagen}" class="card-img-top" alt="${producto.nombre}" style="height:320px; object-fit: cover; witdh:100%">
-          <div class="imagen card-body">
-            <h5 class="nombre card-title">${producto.nombre}</h5>
-            <p class="precio card-text">$${producto.precio}</p>
-            <a href="producto_e.html?id=${producto.id}" class="btn btn-danger">
-              Ver producto
-            </a>
-            <button class="btn btn-danger btn-add" onclick="agregarAlCarrito(${producto.id}); iluminarCarrito();">
-              Añadir al carrito
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  });
-}
-function agregarAlCarrito(id) {
-    const producto = productos.find(p => p.id === id);
-    let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-    const existe = carrito.find(product => product.id === id);
-    if (existe) {
-        existe.cantidad++;
-    }else{
-        const nuevoProducto = { 
-            id: producto.id, 
-            nombre: producto.nombre, 
-            precio: producto.precio, 
-            imagen: producto.imagen,
-            cantidad: 1 
-        };
-        carrito.push(nuevoProducto);
-    };
-    localStorage.setItem("carrito", JSON.stringify(carrito));
-    alert('El producto ha sido agregado al carrito');
-}
-function actualizarCarrito() {
-    const contenedorCarrito = document.getElementById("carrito-contenido");
-    contenedorCarrito.innerHTML = "";
-    if (carrito.length === 0) {
-        contenedorCarrito.innerHTML = "<p>El carrito está vacío</p>";
-    return;
-    }
-    carrito.forEach((producto, index) => {
-        contenedorCarrito.innerHTML += `
-        <div class="d-flex justify-content-between align-items-center mb-2">
-        <span>${producto.nombre} - $${producto.precio}</span>
-        <button class="btn btn-sm btn-outline-light" onclick="eliminarDelCarrito(${index})">Eliminar</button>
-      </div>
-    `;
-    });
-    const total = carrito.reduce((sum, producto) => sum + producto.precio, 0);
-    contenedorCarrito.innerHTML += `<p>Total: $${total}</p>`;
-}
-function eliminarDelCarrito(index) {
-    carrito.splice(index, 1);
-    actualizarCarrito();
-}
-mostrarProductos();
-
-
-
-
-
