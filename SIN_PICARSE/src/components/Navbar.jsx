@@ -8,7 +8,7 @@ export default function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container">
-        <Link className="navbar-brand fw-bold" to="/">Sin Picarse</Link>
+        <Link className="navbar-brand fw-bold" to="/"><img src="/images/Logo SIN PICARSE.png" alt="SIN PICARSE" style={{ width: '150px', height: '76px' }} /></Link>
         <div className="collapse navbar-collapse">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
