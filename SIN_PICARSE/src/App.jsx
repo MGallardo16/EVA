@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import { CartProvider } from "./context/CarritoContext";
 import { AuthProvider, AuthContext } from "./context/Autenticacion";
@@ -38,43 +38,57 @@ function PrivateRoute({ children }) {
   return children;
 }
 
+function LayoutContent() {
+  const location = useLocation();
+  
+  // Detecta si la ruta actual empieza por /dashboard
+  const esRutaAdmin = location.pathname.startsWith("/dashboard");
+
+  return (
+    <div className="d-flex flex-column min-vh-100">
+
+      {!esRutaAdmin && <Navbar />}
+
+      <main className="flex-grow-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/productos" element={<Productos />} />
+          <Route path="/producto/:id" element={<ProductoDetalle />} />
+          <Route path="/carrito" element={<Carrito />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/contacto" element={<Contacto />} />
+          <Route path="/login" element={<Login />} />
+
+          <Route
+            path="/dashboard/*"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          >
+            <Route path="usuarios" element={<Usuarios />} />
+            <Route path="administradores" element={<Administradores />} />
+            <Route path="productos" element={<ProductosAdmin />} />
+            <Route path="categorias" element={<Categorias />} />
+            <Route path="ordenes" element={<Ordenes />} />
+            <Route path="reportes" element={<Reportes />} />
+            <Route path="perfil" element={<Perfil />} />
+          </Route>
+        </Routes>
+      </main>
+
+      {!esRutaAdmin && <Footer />}
+    </div>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <Router>
-          <div className="d-flex flex-column min-vh-100">
-            <Navbar />
-            <main className="flex-grow-1">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/productos" element={<Productos />} />
-                <Route path="/producto/:id" element={<ProductoDetalle />} />
-                <Route path="/carrito" element={<Carrito />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/contacto" element={<Contacto />} />
-                <Route path="/login" element={<Login />} />
-
-                <Route
-                  path="/dashboard"
-                  element={
-                    <PrivateRoute>
-                      <Dashboard />
-                    </PrivateRoute>
-                  }
-                >
-                  <Route path="usuarios" element={<Usuarios />} />
-                  <Route path="administradores" element={<Administradores />} />
-                  <Route path="productos" element={<ProductosAdmin />} />
-                  <Route path="categorias" element={<Categorias />} />
-                  <Route path="ordenes" element={<Ordenes />} />
-                  <Route path="reportes" element={<Reportes />} />
-                  <Route path="perfil" element={<Perfil />} />
-                </Route>
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+          <LayoutContent />
         </Router>
       </CartProvider>
     </AuthProvider>

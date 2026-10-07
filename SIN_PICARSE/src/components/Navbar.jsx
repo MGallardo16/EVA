@@ -43,14 +43,6 @@ export default function Navbar() {
                   <Link className="nav-link" to="/carrito">Carrito</Link>
                 </li>
 
-                {usuario?.rol === "admin" && (
-                  <li className="nav-item me-lg-3">
-                    <Link className="btn btn-outline-warning btn-sm" to="/dashboard">
-                      Panel Admin
-                    </Link>
-                  </li>
-                )}
-
                 {!usuario ? (
                   <li className="nav-item">
                     <Link 
