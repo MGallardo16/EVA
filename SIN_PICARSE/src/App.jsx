@@ -1,13 +1,12 @@
+import { useContext } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-// Contextos globales
-import { CartProvider } from "./context/CarritoContext";
-import { AuthProvider } from "./context/Autenticacion";
 
-// Componentes comunes
+import { CartProvider } from "./context/CarritoContext";
+import { AuthProvider, AuthContext } from "./context/Autenticacion";
+
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-// Pages (vistas principales públicas)
 import Home from "./pages/Inicio";
 import Productos from "./pages/Productos";
 import ProductoDetalle from "./pages/ProductoDetalle";
@@ -16,7 +15,6 @@ import Blog from "./pages/Blog";
 import Contacto from "./pages/Contacto";
 import Login from "./pages/Login";
 
-// Dashboard y páginas internas
 import Dashboard from "./pages/DashboardAdmin";
 import Usuarios from "./pages/ADMIN/Usuarios.jsx"; 
 import Administradores from "./pages/ADMIN/Administradores.jsx";
@@ -24,12 +22,20 @@ import Categorias from "./pages/ADMIN/Categorias.jsx";
 import Ordenes from "./pages/ADMIN/Ordenes.jsx";
 import Reportes from "./pages/ADMIN/Reportes.jsx";
 import Perfil from "./pages/ADMIN/Perfil.jsx";
-import ProductosAdmin from "./pages/ADMIN/Productos.jsx"; // versión admin de productos
+import ProductosAdmin from "./pages/ADMIN/Productos.jsx";
 
-// Ruta privada
 function PrivateRoute({ children }) {
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-  return isLoggedIn ? children : <Navigate to="/login" />;
+  const { usuario } = useContext(AuthContext);
+
+  if (!usuario) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (usuario.rol !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
 
 function App() {
@@ -41,7 +47,6 @@ function App() {
             <Navbar />
             <main className="flex-grow-1">
               <Routes>
-                {/* Rutas públicas */}
                 <Route path="/" element={<Home />} />
                 <Route path="/productos" element={<Productos />} />
                 <Route path="/producto/:id" element={<ProductoDetalle />} />
@@ -50,7 +55,6 @@ function App() {
                 <Route path="/contacto" element={<Contacto />} />
                 <Route path="/login" element={<Login />} />
 
-                {/* Rutas privadas: Dashboard */}
                 <Route
                   path="/dashboard"
                   element={

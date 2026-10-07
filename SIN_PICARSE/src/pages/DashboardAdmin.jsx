@@ -3,20 +3,26 @@ import { useContext } from "react";
 import { AuthContext } from "../context/Autenticacion";
 
 export default function Dashboard() {
-  const { logout } = useContext(AuthContext);
+  const { usuario, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const cerrarSesion = () => {
     logout();
-    navigate("/"); // redirige al login
+    navigate("/");
   };
 
   return (
     <div className="d-flex">
-      {/* Sidebar */}
-      <div className="sidebar bg-dark text-white p-3" style={{ width: "250px", minHeight: "100vh" }}>
-        <h4 className="border-bottom pb-2 text-center">Panel de Administrador</h4>
-        <div className="nav flex-column nav-pills">
+      <div className="sidebar bg-dark text-white p-3 d-flex flex-column" style={{ width: "250px", minHeight: "100vh" }}>
+        <h4 className="border-bottom pb-2 text-center fs-5">Panel de Administrador</h4>
+        
+        {usuario && (
+          <div className="text-center mb-3 text-secondary small">
+            Admin: <strong className="text-white">{usuario.nombre_usuario}</strong>
+          </div>
+        )}
+
+        <div className="nav flex-column nav-pills flex-grow-1">
           <Link to="usuarios" className="nav-link text-white">Gestión de usuarios</Link>
           <Link to="productos" className="nav-link text-white">Gestión de productos</Link>
           <Link to="administradores" className="nav-link text-white">Gestión de administradores</Link>
@@ -25,14 +31,19 @@ export default function Dashboard() {
           <Link to="reportes" className="nav-link text-white">Reportes</Link>
           <Link to="perfil" className="nav-link text-white">Perfil</Link>
         </div>
-        <button className="btn btn-outline-light mt-3 w-100" onClick={cerrarSesion}>
-          Cerrar Sesión
-        </button>
+
+        <div className="mt-auto pt-3 border-top">
+          <button className="btn btn-outline-light mb-2 w-100 btn-sm" onClick={() => navigate("/")}>
+            ← Volver a la Tienda
+          </button>
+          <button className="btn btn-danger w-100 btn-sm" onClick={cerrarSesion}>
+            Cerrar Sesión
+          </button>
+        </div>
       </div>
 
-      {/* Área principal */}
       <main id="contenido-principal" className="flex-grow-1 p-4 bg-light" style={{ maxHeight: "100vh", overflow: "auto" }}>
-        <Outlet /> {/* Aquí se renderizan las páginas según la ruta */}
+        <Outlet />
       </main>
     </div>
   );

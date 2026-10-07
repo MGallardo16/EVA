@@ -1,11 +1,22 @@
+import { Link } from "react-router-dom";
+
 export default function Footer() {
   return (
-    <footer className="bg-dark text-light py-3 mt-5">
-      <div className="container-fluid text-center">
-        <p>&copy; 2026 Sin Picarse - Todos los derechos reservados</p>
-        <nav>
-          <a href="/blog" className="text-light mx-2">Blog</a>
-          <a href="/contacto" className="text-light mx-2">Contacto</a>
+    <footer 
+      className="bg-dark text-light p-0 mt-auto d-flex align-items-center w-100" 
+      style={{ height: "100px", minHeight: "100px", maxHeight: "100px" }}
+    >
+      <div className="container text-center">
+        <p className="mb-2" style={{ fontSize: "0.9rem" }}>
+          &copy; 2026 Sin Picarse - Todos los derechos reservados
+        </p>
+        <nav className="d-flex justify-content-center align-items-center gap-3">
+          <Link to="/blog" className="text-light text-decoration-none small">
+            Blog
+          </Link>
+          <Link to="/contacto" className="text-light text-decoration-none small">
+            Contacto
+          </Link>
         </nav>
       </div>
     </footer>

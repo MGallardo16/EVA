@@ -11,7 +11,7 @@ export const productos =[
         nombre: "Jenga Clásico",
         precio: 16990,
         imagen: "https://hasbrostore.cl/28317-large_default/juego-de-mesa-hasbro-games-jenga.jpg",
-        descripcion: "Jenga Clásico (Hasbro Gaming) - El Juego de Torre de Madera Favorito de Todos <br> ¡Desafía la gravedad, pon a prueba tu pulso y vive la emoción al máximo con el icónico Jenga Clásico! Ideal para reuniones familiares, noches de juegos con amigos o para pasar un rato lleno de risas y tensión estratégica."
+        descripcion: "Jenga Clásico (Hasbro Gaming) - El Juego de Torre de Madera Favorito de Todos ¡Desafía la gravedad, pon a prueba tu pulso y vive la emoción al máximo con el icónico Jenga Clásico! Ideal para reuniones familiares, noches de juegos con amigos o para pasar un rato lleno de risas y tensión estratégica."
     },
     {
         id: 3,
@@ -25,7 +25,7 @@ export const productos =[
         nombre: "Dos",
         precio: 8990,
         imagen: "https://http2.mlstatic.com/D_NQ_NP_824353-CBT75005986781_032024-O.webp",
-        descripcion: "DOS Segunda Edición en Estuche Metálico (Mattel Games) – ¡La Secuela del Juego de Cartas N.º 1! <br> Si te encanta UNO, prepárate para multiplicar la diversión con DOS Segunda Edición. Esta versión actualizada añade nuevas reglas y una mecánica mejorada donde juegas en dos pilas de descarte al mismo tiempo. Además, viene en un resistente estuche metálico coleccionable, perfecto para proteger tus cartas y llevar la diversión a todas partes."
+        descripcion: "DOS Segunda Edición en Estuche Metálico (Mattel Games) – ¡La Secuela del Juego de Cartas N.º 1! Si te encanta UNO, prepárate para multiplicar la diversión con DOS Segunda Edición. Esta versión actualizada añade nuevas reglas y una mecánica mejorada donde juegas en dos pilas de descarte al mismo tiempo. Además, viene en un resistente estuche metálico coleccionable, perfecto para proteger tus cartas y llevar la diversión a todas partes."
       },
       {
         id: 5,
