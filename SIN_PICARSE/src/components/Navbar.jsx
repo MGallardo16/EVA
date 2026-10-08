@@ -17,7 +17,7 @@ export default function Navbar() {
             <img 
               src="/images/Logo SIN PICARSE.png" 
               alt="SIN PICARSE" 
-              style={{ width: "auto", height: "55px", objectFit: "contain" }} 
+              style={{ width: "auto", height: "76px", objectFit: "contain" }} 
             />
           </Link>
 

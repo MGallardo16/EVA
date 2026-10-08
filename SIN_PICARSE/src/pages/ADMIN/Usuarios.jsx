@@ -8,6 +8,14 @@ export default function Usuarios() {
     correo: "",
     contraseña: ""
   });
+  
+  const [visibleIds, setVisibleIds] = useState([]);
+
+  const toggleVisibility = (id) => {
+    setVisibleIds((prev) =>
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
+    );
+  };
 
   useEffect(() => {
     fetchUsuarios();
@@ -76,7 +84,16 @@ export default function Usuarios() {
                   <td className="fw-bold ps-3">{u.id}</td>
                   <td>{u.nombre_usuario}</td>
                   <td>{u.correo}</td>
-                  <td className="text-muted">••••••••</td>
+                  <td>
+                    {visibleIds.includes(u.id) ? u.contraseña : "••••••••"}
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-light ms-2"
+                      onClick={() => toggleVisibility(u.id)}
+                    >
+                      {visibleIds.includes(u.id) ? "🔓" : "🔒"}
+                    </button>
+                  </td>
                 </tr>
               ))
             )}

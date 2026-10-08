@@ -6,6 +6,7 @@ export default function Administradores() {
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [pass, setPass] = useState("");
+  const [visibleIds, setVisibleIds] = useState([]);
 
   useEffect(() => {
     fetchAdmins();
@@ -60,6 +61,12 @@ export default function Administradores() {
     }
   };
 
+  const toggleVisibility = (id) => {
+    setVisibleIds(prev =>
+      prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
+    );
+  };
+
   return (
     <div className="p-4 w-100 text-white">
       <h3 className="mb-4">Gestión de Administradores</h3>
@@ -86,7 +93,16 @@ export default function Administradores() {
                   <td className="fw-bold ps-3">{a.id}</td>
                   <td>{a.nombre_admin}</td>
                   <td>{a.correo}</td>
-                  <td>{a.contraseña ? "••••••••" : "N/A"}</td>
+                  <td>
+                    {visibleIds.includes(a.id) ? a.contraseña : "••••••••"}
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-light ms-2"
+                      onClick={() => toggleVisibility(a.id)}
+                    >
+                      {visibleIds.includes(a.id) ? "🔓" : "🔒"}
+                    </button>
+                  </td>
                   <td className="text-end pe-3">
                     <span className="badge bg-danger">Admin</span>
                   </td>
