@@ -1,73 +1,48 @@
 import { createContext, useState, useEffect } from "react";
-import { productos } from "../data/productos";
-import { usuariosEjemplo } from "../data/usuarios";
-import { administradoresEjemplo } from "../data/administradores";
+import { supabase } from "../supabaseClient";
 
 export const AdminContext = createContext();
 
 export function AdminProvider({ children }) {
-  // Productos
-  const [productosAdmin, setProductosAdmin] = useState(() => {
-    return JSON.parse(localStorage.getItem("productos")) || productos;
-  });
-
-  // Usuarios
-  const [usuariosAdmin, setUsuariosAdmin] = useState(() => {
-    return JSON.parse(localStorage.getItem("usuarios")) || usuariosEjemplo;
-  });
-
-  // Administradores
-  const [admins, setAdmins] = useState(() => {
-    return JSON.parse(localStorage.getItem("administradores")) || administradoresEjemplo;
-  });
-
-  // Persistencia
-  useEffect(() => {
-    localStorage.setItem("productos", JSON.stringify(productosAdmin));
-  }, [productosAdmin]);
+  const [productosAdmin, setProductosAdmin] = useState([]);
+  const [usuariosAdmin, setUsuariosAdmin] = useState([]);
+  const [admins, setAdmins] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("usuarios", JSON.stringify(usuariosAdmin));
-  }, [usuariosAdmin]);
+    const fetchData = async () => {
+      const { data: productos } = await supabase.from("productos").select("*");
+      const { data: usuarios } = await supabase.from("usuarios").select("*");
+      const { data: administradores } = await supabase.from("administradores").select("*");
 
-  useEffect(() => {
-    localStorage.setItem("administradores", JSON.stringify(admins));
-  }, [admins]);
+      if (productos) setProductosAdmin(productos);
+      if (usuarios) setUsuariosAdmin(usuarios);
+      if (administradores) setAdmins(administradores);
+    };
+    fetchData();
+  }, []);
 
-  // Usuarios
-  const eliminarUsuario = (id) => {
-    const existe = usuariosAdmin.find(u => u.id === id);
-    if (!existe) {
-      alert(`No se encontró ningún usuario con el id ${id}`);
-      return;
-    }
+  const eliminarUsuario = async (id) => {
+    await supabase.from("usuarios").delete().eq("id", id);
     setUsuariosAdmin(prev => prev.filter(u => u.id !== id));
-    alert(`Usuario con id ${id} eliminado correctamente`);
   };
 
-  const agregarUsuario = (nombre, correo, contraseña) => {
-    const nuevoId = usuariosAdmin.length > 0 ? Math.max(...usuariosAdmin.map(u => u.id)) + 1 : 1;
-    const nuevoUsuario = { id: nuevoId, nombre_usuario: nombre, correo, contraseña };
-    setUsuariosAdmin(prev => [...prev, nuevoUsuario]);
-    alert(`Usuario ${nombre} creado correctamente`);
+  const agregarUsuario = async (nombre, correo, contraseña) => {
+    const { data, error } = await supabase.from("usuarios").insert([
+      { nombre_usuario: nombre, correo, contraseña }
+    ]).select();
+    if (!error && data) setUsuariosAdmin(prev => [...prev, ...data]);
   };
 
-  // Administradores
-  const eliminarAdmin = (id) => {
-    const existe = admins.find(a => a.id === id);
-    if (!existe) {
-      alert(`No se encontró ningún administrador con el id ${id}`);
-      return;
-    }
+  const eliminarAdmin = async (id) => {
+    await supabase.from("administradores").delete().eq("id", id);
     setAdmins(prev => prev.filter(a => a.id !== id));
-    alert(`Administrador con id ${id} eliminado correctamente`);
   };
 
-  const agregarAdmin = (nombre, correo, contraseña) => {
-    const nuevoId = admins.length > 0 ? Math.max(...admins.map(a => a.id)) + 1 : 1;
-    const nuevoAdmin = { id: nuevoId, nombre_usuario: nombre, correo, contraseña };
-    setAdmins(prev => [...prev, nuevoAdmin]);
-    alert(`Administrador ${nombre} creado correctamente`);
+  const agregarAdmin = async (nombre, correo, contraseña) => {
+    const { data, error } = await supabase.from("administradores").insert([
+      { nombre_admin: nombre, correo, contraseña }
+    ]).select();
+    if (!error && data) setAdmins(prev => [...prev, ...data]);
   };
 
   return (

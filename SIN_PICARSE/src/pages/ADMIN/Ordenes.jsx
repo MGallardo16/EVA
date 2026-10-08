@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
 
 export default function Ordenes() {
   const [ordenes, setOrdenes] = useState([]);
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("ordenes")) || [
-      { id: 1, usuario: "Camila Silva", total: 30990, fecha: "2026-10-06" },
-      { id: 2, usuario: "Matías Rojas", total: 16990, fecha: "2026-10-05" }
-    ];
-    setOrdenes(data);
-    localStorage.setItem("ordenes", JSON.stringify(data));
+    const fetchOrdenes = async () => {
+      const { data, error } = await supabase.from("ordenes").select("*");
+      if (!error) setOrdenes(data);
+    };
+    fetchOrdenes();
   }, []);
 
   return (

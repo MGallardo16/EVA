@@ -1,15 +1,35 @@
+import { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
+
 export default function Reportes() {
-  const productos = JSON.parse(localStorage.getItem("productos")) || [];
-  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-  const ordenes = JSON.parse(localStorage.getItem("ordenes")) || [];
+  const [reportes, setReportes] = useState([]);
+
+  useEffect(() => {
+    const fetchReportes = async () => {
+      const { data, error } = await supabase.from("reportes").select("*");
+      if (!error) setReportes(data);
+    };
+    fetchReportes();
+  }, []);
 
   return (
-    <div className="p-3 bg-light rounded">
+    <div style={{ maxHeight: "400px", overflowY: "auto" }}>
       <h2>Reportes</h2>
-      <p><strong>Total de productos:</strong> {productos.length}</p>
-      <p><strong>Total de usuarios:</strong> {usuarios.length}</p>
-      <p><strong>Total de órdenes:</strong> {ordenes.length}</p>
-      <p><em>(Más adelante puedes agregar gráficos con Chart.js)</em></p>
+      <table className="table table-dark table-striped">
+        <thead>
+          <tr><th>ID</th><th>Título</th><th>Descripción</th><th>Fecha</th></tr>
+        </thead>
+        <tbody>
+          {reportes.map(r => (
+            <tr key={r.id}>
+              <td>{r.id}</td>
+              <td>{r.titulo}</td>
+              <td>{r.descripcion}</td>
+              <td>{r.fecha}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

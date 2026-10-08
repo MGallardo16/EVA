@@ -1,29 +1,27 @@
 import { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
 
 export default function Administradores() {
   const [administradores, setAdministradores] = useState([]);
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("administradores")) || [
-      { id: 1, nombre_usuario: "Admin Principal", correo: "admin@duocuc.cl", contraseña: "admin123" },
-      { id: 2, nombre_usuario: "Profesor Encargado", correo: "profesor@profesor.duocuc.cl", contraseña: "prof123" }
-    ];
-    setAdministradores(data);
-    localStorage.setItem("administradores", JSON.stringify(data));
+    const fetchAdmins = async () => {
+      const { data, error } = await supabase.from("administradores").select("*");
+      if (!error) setAdministradores(data);
+    };
+    fetchAdmins();
   }, []);
 
-  const eliminarAdmin = (id) => {
-    const nuevos = administradores.filter(a => a.id !== id);
-    setAdministradores(nuevos);
-    localStorage.setItem("administradores", JSON.stringify(nuevos));
+  const eliminarAdmin = async (id) => {
+    const { error } = await supabase.from("administradores").delete().eq("id", id);
+    if (!error) setAdministradores(prev => prev.filter(a => a.id !== id));
   };
 
-  const agregarAdmin = (nombre, correo, contraseña) => {
-    const nuevoId = administradores.length ? Math.max(...administradores.map(a => a.id)) + 1 : 1;
-    const nuevo = { id: nuevoId, nombre_usuario: nombre, correo, contraseña };
-    const nuevos = [...administradores, nuevo];
-    setAdministradores(nuevos);
-    localStorage.setItem("administradores", JSON.stringify(nuevos));
+  const agregarAdmin = async (nombre, correo, contraseña) => {
+    const { data, error } = await supabase.from("administradores").insert([
+      { nombre_admin: nombre, correo, contraseña }
+    ]).select();
+    if (!error && data) setAdministradores(prev => [...prev, ...data]);
   };
 
   return (
@@ -36,7 +34,7 @@ export default function Administradores() {
             {administradores.map(a => (
               <tr key={a.id}>
                 <td>{a.id}</td>
-                <td>{a.nombre_usuario}</td>
+                <td>{a.nombre_admin}</td>
                 <td>{a.correo}</td>
                 <td>{a.contraseña}</td>
               </tr>
@@ -50,6 +48,7 @@ export default function Administradores() {
           <form onSubmit={(e) => {
             e.preventDefault();
             eliminarAdmin(parseInt(e.target.id.value));
+            e.target.reset();
           }}>
             <input type="number" name="id" className="form-control mb-2" placeholder="ID" required />
             <button type="submit" className="btn btn-danger w-100">Eliminar</button>
@@ -60,6 +59,7 @@ export default function Administradores() {
           <form onSubmit={(e) => {
             e.preventDefault();
             agregarAdmin(e.target.nombre.value, e.target.correo.value, e.target.contraseña.value);
+            e.target.reset();
           }}>
             <input type="text" name="nombre" className="form-control mb-2" placeholder="Nombre" required />
             <input type="email" name="correo" className="form-control mb-2" placeholder="Correo" required />
