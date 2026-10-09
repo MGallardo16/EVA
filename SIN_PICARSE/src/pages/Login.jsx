@@ -6,6 +6,8 @@ export default function Login() {
   const { login, registro } = useContext(AuthContext);
   const [modo, setModo] = useState("login"); // "login" o "registro"
   const navigate = useNavigate();
+  const [showPassLogin, setShowPassLogin] = useState(false);
+  const [showPassRegistro, setShowPassRegistro] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -58,13 +60,22 @@ export default function Login() {
             
             <div className="mb-3">
               <label className="form-label text-secondary small">Contraseña</label>
-              <input
-                type="password"
-                name="contraseña"
-                className="form-control"
-                placeholder="••••••••"
-                required
-              />
+              <div className="input-group">
+                <input
+                  type={showPassLogin ? "text" : "password"}   // 👈 aquí cambia según el estado
+                  name="contraseña"
+                  className="form-control"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowPassLogin(!showPassLogin)}  // 👈 alterna el estado
+                >
+                  {showPassLogin ? "🔓" : "🔒"}  
+                </button>
+              </div>
             </div>
 
             <button type="submit" className="btn btn-danger w-100 mt-2">
@@ -113,13 +124,22 @@ export default function Login() {
 
             <div className="mb-3">
               <label className="form-label text-secondary small">Contraseña</label>
-              <input
-                type="password"
-                name="contraseña"
-                className="form-control"
-                placeholder="••••••••"
-                required
-              />
+              <div className="input-group">
+                <input
+                  type={showPassRegistro ? "text" : "password"} 
+                  name="contraseña"
+                  className="form-control"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowPassRegistro(!showPassRegistro)}
+                >
+                  {showPassRegistro ? "🔓" : "🔒"}
+                </button>
+              </div>
             </div>
 
             <button type="submit" className="btn btn-danger w-100 mt-2">
