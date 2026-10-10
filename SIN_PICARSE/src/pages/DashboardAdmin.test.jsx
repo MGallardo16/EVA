@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
@@ -39,6 +39,7 @@ describe("Dashboard Component", () => {
   it("Debe reflejar el estado al cambiar de sección", () => {
     renderDashboard();
     const usuariosLink = screen.getByRole("link", { name: /gestión de usuarios/i });
+    fireEvent.click(usuariosLink);
     expect(usuariosLink).toBeInTheDocument();
   });
 

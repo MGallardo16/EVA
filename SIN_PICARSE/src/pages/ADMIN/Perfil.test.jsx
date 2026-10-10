@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import Perfil from "./Perfil";
@@ -27,15 +27,16 @@ describe("Perfil Component", () => {
     const { container } = renderPerfil();
 
     const nombreInput = container.querySelector('input[type="text"]');
-    nombreInput.value = "Admin Actualizado";
+    const correoInput = container.querySelector('input[type="email"]');
+    const passInput = container.querySelector('input[type="password"]');
+
+    fireEvent.change(nombreInput, { target: { value: "Admin Actualizado" } });
     expect(nombreInput.value).toBe("Admin Actualizado");
 
-    const correoInput = container.querySelector('input[type="email"]');
-    correoInput.value = "admin@nuevo.com";
+    fireEvent.change(correoInput, { target: { value: "admin@nuevo.com" } });
     expect(correoInput.value).toBe("admin@nuevo.com");
 
-    const passInput = container.querySelector('input[type="password"]');
-    passInput.value = "NuevaPass123";
+    fireEvent.change(passInput, { target: { value: "NuevaPass123" } });
     expect(passInput.value).toBe("NuevaPass123");
   });
 

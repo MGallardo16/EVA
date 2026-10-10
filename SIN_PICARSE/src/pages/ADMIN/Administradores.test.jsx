@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom"; // para usar toBeInTheDocument
 import Administradores from "./Administradores"; // ajusta la ruta según tu proyecto
 
@@ -14,15 +14,15 @@ describe("Administradores Component", () => {
     render(<Administradores />);
     
     const nombreInput = screen.getByPlaceholderText("Nombre de usuario");
-    nombreInput.value = "AdminTest";
+    fireEvent.change(nombreInput, { target: { value: "AdminTest" } });
     expect(nombreInput.value).toBe("AdminTest");
 
     const correoInput = screen.getByPlaceholderText("Correo electrónico");
-    correoInput.value = "admin@test.com";
+    fireEvent.change(correoInput, { target: { value: "admin@test.com" } });
     expect(correoInput.value).toBe("admin@test.com");
 
     const passInput = screen.getByPlaceholderText("Contraseña");
-    passInput.value = "12345";
+    fireEvent.change(passInput, { target: { value: "12345" } });
     expect(passInput.value).toBe("12345");
   });
 

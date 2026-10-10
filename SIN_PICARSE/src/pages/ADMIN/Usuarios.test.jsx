@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom"; // para usar toBeInTheDocument
 import Usuarios from "./Usuarios";
 
@@ -13,7 +13,7 @@ describe("Usuarios Component", () => {
   it("debe actualizar el valor del input al escribir", () => {
     render(<Usuarios />);
     const nombreInput = screen.getByPlaceholderText("Nombre de usuario");
-    nombreInput.value = "NuevoUser";
+    fireEvent.change(nombreInput, { target: { value: "NuevoUser" } });
     expect(nombreInput.value).toBe("NuevoUser");
   });
 

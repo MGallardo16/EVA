@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
 import Carrito from "./Carrito";
@@ -39,8 +39,8 @@ describe("Carrito Component", () => {
   it("debe actualizar el valor del input de cantidad al escribir", () => {
     renderCarrito();
     const cantidadInput = screen.getByRole("spinbutton");
-    cantidadInput.value = "3";
-    expect(cantidadInput.value).toBe("3");
+    fireEvent.change(cantidadInput, { target: { value: "3" } });
+    expect(mockCartContextValue.actualizarCantidad).toHaveBeenCalled();
   });
 
   it("debe tener un botón para eliminar producto", () => {

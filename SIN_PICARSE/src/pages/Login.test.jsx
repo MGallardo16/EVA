@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
@@ -31,7 +31,7 @@ describe("Login Component", () => {
   it("Debe actualizar el valor del campo contraseña al escribir", () => {
     renderLogin();
     const passInput = screen.getByPlaceholderText(/••••••••/i);
-    passInput.value = "12345";
+    fireEvent.change(passInput, { target: { value: "12345" } });
     expect(passInput.value).toBe("12345");
   });
 
