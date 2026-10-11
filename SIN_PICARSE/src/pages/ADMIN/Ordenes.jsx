@@ -42,7 +42,7 @@ export default function Ordenes() {
                 <tr key={o.id}>
                   <td className="fw-bold ps-3">{o.id}</td>
                   <td>{o.usuario}</td>
-                  <td className="text-muted small">{o.detalle || "Sin detalles"}</td>
+                  <td className="text-white small">{o.detalle || "Sin detalles"}</td>
                   <td className="text-success fw-bold">${Number(o.total).toLocaleString("es-CL")}</td>
                   <td>{o.fecha ? new Date(o.fecha).toLocaleDateString("es-CL") : "-"}</td>
                 </tr>

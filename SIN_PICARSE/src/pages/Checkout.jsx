@@ -73,6 +73,23 @@ export default function Checkout() {
         console.error("Error al registrar orden:", error);
         alert("Ocurrió un error al procesar el pago.");
       } else {
+        for (const item of carrito) {
+          const { data: productoActual, error: errorStock } = await supabase
+            .from("productos")
+            .select("stock")
+            .eq("id", item.id)
+            .single();
+
+          if (!errorStock && productoActual) {
+            const nuevoStock = Math.max(0, productoActual.stock - item.cantidad);
+
+            await supabase
+              .from("productos")
+              .update({ stock: nuevoStock })
+              .eq("id", item.id);
+          }
+        }
+
         setBoleta({
           idOrden: data.id,
           fecha: new Date().toLocaleString("es-CL"),
