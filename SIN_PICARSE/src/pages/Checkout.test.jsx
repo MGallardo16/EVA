@@ -7,7 +7,7 @@ import { CartContext } from "../context/CarritoContext";
 import { AuthContext } from "../context/Autenticacion";
 import { supabase } from "../supabaseClient";
 
-// Mock de Supabase para interceptar la inserción de la orden en la base de datos
+//Intercepta la inserción de la orden en la base de datos
 vi.mock("../supabaseClient", () => ({
   supabase: {
     from: vi.fn(() => ({
