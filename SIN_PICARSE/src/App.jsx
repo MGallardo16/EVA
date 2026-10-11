@@ -23,6 +23,7 @@ import Ordenes from "./pages/ADMIN/Ordenes.jsx";
 import Reportes from "./pages/ADMIN/Reportes.jsx";
 import Perfil from "./pages/ADMIN/Perfil.jsx";
 import ProductosAdmin from "./pages/ADMIN/Productos.jsx";
+import Checkout from "./pages/Checkout.jsx";
 
 function PrivateRoute({ children }) {
   const { usuario } = useContext(AuthContext);
@@ -58,6 +59,8 @@ function LayoutContent() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/checkout" element={<Checkout />} />
+
 
           <Route
             path="/dashboard/*"

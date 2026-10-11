@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CarritoContext";
 
 export default function Carrito() {
@@ -8,9 +9,10 @@ export default function Carrito() {
     eliminarDelCarrito,
     subtotal,
     iva,
-    total,
-    simularCompra
+    total
   } = useContext(CartContext);
+
+  const navigate = useNavigate();
 
   if (carrito.length === 0) {
     return <p className="text-center mt-5">El carrito está vacío</p>;
@@ -30,7 +32,7 @@ export default function Carrito() {
           </tr>
         </thead>
         <tbody>
-          {carrito.map(p => (
+          {carrito.map((p) => (
             <tr key={p.id}>
               <td>
                 <img
@@ -47,8 +49,9 @@ export default function Carrito() {
                   min="1"
                   value={p.cantidad}
                   onChange={(e) =>
-                    actualizarCantidad(p.id, parseInt(e.target.value))
+                    actualizarCantidad(p.id, parseInt(e.target.value) || 1)
                   }
+                  style={{ width: "60px" }}
                 />
               </td>
               <td>
@@ -74,12 +77,13 @@ export default function Carrito() {
           </tr>
         </tbody>
       </table>
+
       <button
         id="btn-simular-compra"
         className="btn btn-success"
-        onClick={simularCompra}
+        onClick={() => navigate("/checkout")}
       >
-        ¡Comprar!
+        Ir a Pagar
       </button>
     </div>
   );
