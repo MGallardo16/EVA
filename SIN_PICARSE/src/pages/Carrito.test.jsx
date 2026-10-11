@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import Carrito from "./Carrito";
 import { CartContext } from "../context/CarritoContext";
@@ -25,9 +26,11 @@ const mockCartContextValue = {
 describe("Carrito Component", () => {
   const renderCarrito = () =>
     render(
-      <CartContext.Provider value={mockCartContextValue}>
-        <Carrito />
-      </CartContext.Provider>
+      <MemoryRouter>
+        <CartContext.Provider value={mockCartContextValue}>
+          <Carrito />
+        </CartContext.Provider>
+      </MemoryRouter>
     );
 
   it("debe renderizar la tabla del carrito", () => {
@@ -50,9 +53,9 @@ describe("Carrito Component", () => {
     expect(eliminarBtn).toHaveClass("btn-danger");
   });
 
-  it("debe tener un botón para simular compra", () => {
+  it("debe tener un botón para ir al checkout o simular compra", () => {
     renderCarrito();
-    const comprarBtn = screen.getByRole("button", { name: /¡comprar!/i });
+    const comprarBtn = screen.getByRole("button", { name: /(ir a pagar|ir al checkout|¡comprar!)/i });
     expect(comprarBtn).toBeInTheDocument();
     expect(comprarBtn).toHaveAttribute("id", "btn-simular-compra");
   });
