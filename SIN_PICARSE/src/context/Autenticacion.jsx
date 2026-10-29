@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
       if (admin) {
         const adminData = {
           ...admin,
-          nombre_usuario: admin.nombre_admin, // Estandarizamos para el resto de la app
+          nombre_usuario: admin.nombre_admin,
           rol: "admin",
         };
         setUsuario(adminData);
@@ -62,6 +62,92 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("Error en login:", error);
       alert("Error de conexión con la base de datos.");
+      return null;
+    }
+  };
+
+  //Login con google
+  const loginWithGoogle = async (datosGoogle) => {
+    const { email, name, picture } = datosGoogle;
+
+    if (!dominioValido(email)) {
+      alert("Correo de Google inválido. Dominio no permitido.");
+      return null;
+    }
+
+    try {
+      const { data: admin } = await supabase
+        .from("administradores")
+        .select("*")
+        .eq("correo", email)
+        .maybeSingle();
+
+      if (admin) {
+        const adminData = {
+          ...admin,
+          nombre_usuario: admin.nombre_admin,
+          avatar: picture,
+          rol: "admin",
+          provider: "google"
+        };
+        setUsuario(adminData);
+        localStorage.setItem("usuarioActivo", JSON.stringify(adminData));
+        localStorage.setItem("isLoggedIn", "true");
+        alert(`¡Bienvenido/a Administrador ${admin.nombre_admin}!`);
+        return adminData;
+      }
+
+      const { data: cliente } = await supabase
+        .from("usuarios")
+        .select("*")
+        .eq("correo", email)
+        .maybeSingle();
+
+      if (cliente) {
+        const clienteData = {
+          ...cliente,
+          avatar: picture,
+          rol: "cliente",
+          provider: "google"
+        };
+        setUsuario(clienteData);
+        localStorage.setItem("usuarioActivo", JSON.stringify(clienteData));
+        localStorage.setItem("isLoggedIn", "true");
+        alert(`¡Bienvenido/a ${cliente.nombre_usuario}!`);
+        return clienteData;
+      }
+
+      //Si no existe en la base de datos, lo registramos automáticamente como cliente
+      const { data: nuevoUsuario, error } = await supabase
+        .from("usuarios")
+        .insert([
+          {
+            nombre_usuario: name,
+            correo: email,
+            contraseña: null, //no requiere clave local
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const nuevoClienteData = {
+        ...nuevoUsuario,
+        avatar: picture,
+        rol: "cliente",
+        provider: "google"
+      };
+
+      setUsuario(nuevoClienteData);
+      localStorage.setItem("usuarioActivo", JSON.stringify(nuevoClienteData));
+      localStorage.setItem("isLoggedIn", "true");
+      alert(`¡Bienvenido/a ${nuevoClienteData.nombre_usuario}!`);
+      return nuevoClienteData;
+
+    } catch (error) {
+      console.error("Error en loginWithGoogle:", error);
+      alert("Error al autenticar con Google.");
       return null;
     }
   };
@@ -115,7 +201,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ usuario, login, registro, logout }}>
+    <AuthContext.Provider value={{ usuario, login, loginWithGoogle, registro, logout }}>
       {children}
     </AuthContext.Provider>
   );

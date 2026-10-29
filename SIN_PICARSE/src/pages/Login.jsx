@@ -10,6 +10,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [showPassLogin, setShowPassLogin] = useState(false);
   const [showPassRegistro, setShowPassRegistro] = useState(false);
+  const { loginWithGoogle } = useContext(AuthContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -28,26 +29,20 @@ export default function Login() {
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const decoded = jwtDecode(credentialResponse.credential);
+    const decoded = jwtDecode(credentialResponse.credential);
 
-      const usuarioGoogle = await login(decoded.email, null, {
-        nombre: decoded.name,
-        avatar: decoded.picture,
-        esGoogle: true
-      });
+    const usuarioLogueado = await loginWithGoogle({
+      email: decoded.email,
+      name: decoded.name,
+      picture: decoded.picture
+    });
 
-      if (usuarioGoogle) {
-        if (usuarioGoogle.rol === "admin") {
-          navigate("/dashboard");
-        } else {
-          navigate("/");
-        }
+    if (usuarioLogueado) {
+      if (usuarioLogueado.rol === "admin") {
+        navigate("/dashboard");
       } else {
         navigate("/");
       }
-    } catch (error) {
-      console.error("Error procesando credencial de Google:", error);
     }
   };
 
