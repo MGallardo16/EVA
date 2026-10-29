@@ -1,6 +1,8 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/Autenticacion";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 export default function Login() {
   const { login, registro } = useContext(AuthContext);
@@ -22,6 +24,30 @@ export default function Login() {
       } else {
         navigate("/");
       }
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+
+      const usuarioGoogle = await login(decoded.email, null, {
+        nombre: decoded.name,
+        avatar: decoded.picture,
+        esGoogle: true
+      });
+
+      if (usuarioGoogle) {
+        if (usuarioGoogle.rol === "admin") {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Error procesando credencial de Google:", error);
     }
   };
 
@@ -62,7 +88,7 @@ export default function Login() {
               <label className="form-label text-secondary small">Contraseña</label>
               <div className="input-group">
                 <input
-                  type={showPassLogin ? "text" : "password"}   // 👈 aquí cambia según el estado
+                  type={showPassLogin ? "text" : "password"}
                   name="contraseña"
                   className="form-control"
                   placeholder="••••••••"
@@ -71,7 +97,7 @@ export default function Login() {
                 <button
                   type="button"
                   className="btn btn-outline-secondary"
-                  onClick={() => setShowPassLogin(!showPassLogin)}  // 👈 alterna el estado
+                  onClick={() => setShowPassLogin(!showPassLogin)}
                 >
                   {showPassLogin ? "🔓" : "🔒"}  
                 </button>
@@ -81,6 +107,24 @@ export default function Login() {
             <button type="submit" className="btn btn-danger w-100 mt-2">
               Entrar
             </button>
+
+            <div className="d-flex align-items-center my-3">
+              <hr className="flex-grow-1 my-0" />
+              <span className="px-2 text-muted small">O</span>
+              <hr className="flex-grow-1 my-0" />
+            </div>
+
+            <div className="d-flex justify-content-center my-2">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => console.error("Error al iniciar sesión con Google")}
+                shape="rectangular"
+                theme="outline"
+                size="large"
+                width="350"
+                text="signin_with"
+              />
+            </div>
 
             <div className="text-center mt-3 pt-2 border-top">
               <small className="text-muted">
