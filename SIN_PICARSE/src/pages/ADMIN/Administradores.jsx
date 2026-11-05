@@ -78,8 +78,6 @@ export default function Administradores() {
               <th style={{ width: "10%" }}>#</th>
               <th style={{ width: "25%" }}>Usuario</th>
               <th style={{ width: "30%" }}>Correo</th>
-              <th style={{ width: "20%" }}>Contraseña</th>
-              <th style={{ width: "15%" }} className="text-end">Rol</th>
             </tr>
           </thead>
           <tbody>
@@ -93,19 +91,6 @@ export default function Administradores() {
                   <td className="fw-bold ps-3">{a.id}</td>
                   <td>{a.nombre_admin}</td>
                   <td>{a.correo}</td>
-                  <td>
-                    {visibleIds.includes(a.id) ? a.contraseña : "••••••••"}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-light ms-2"
-                      onClick={() => toggleVisibility(a.id)}
-                    >
-                      {visibleIds.includes(a.id) ? "🔓" : "🔒"}
-                    </button>
-                  </td>
-                  <td className="text-end pe-3">
-                    <span className="badge bg-danger">Admin</span>
-                  </td>
                 </tr>
               ))
             )}

@@ -70,7 +70,6 @@ export default function Usuarios() {
               <th style={{ width: "10%" }}>#</th>
               <th style={{ width: "30%" }}>Usuario</th>
               <th style={{ width: "35%" }}>Correo</th>
-              <th style={{ width: "25%" }}>Contraseña</th>
             </tr>
           </thead>
           <tbody>
@@ -84,16 +83,6 @@ export default function Usuarios() {
                   <td className="fw-bold ps-3">{u.id}</td>
                   <td>{u.nombre_usuario}</td>
                   <td>{u.correo}</td>
-                  <td>
-                    {visibleIds.includes(u.id) ? u.contraseña : "••••••••"}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-light ms-2"
-                      onClick={() => toggleVisibility(u.id)}
-                    >
-                      {visibleIds.includes(u.id) ? "🔓" : "🔒"}
-                    </button>
-                  </td>
                 </tr>
               ))
             )}
