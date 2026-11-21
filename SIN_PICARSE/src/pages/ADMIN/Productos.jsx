@@ -1,10 +1,11 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { api } from "../../services/api";
 import { AuthContext } from "../../context/Autenticacion";
 
 export default function Productos() {
   const { usuario } = useContext(AuthContext);
   const esAdmin = usuario?.rol === "admin";
+  const fileInputRef = useRef(null);
 
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -34,6 +35,22 @@ export default function Productos() {
     }
   };
 
+  const handleCargarImagen = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("La imagen es muy pesada. Elige una menor a 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNuevoProducto({ ...nuevoProducto, imagen: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAgregar = async (e) => {
     e.preventDefault();
     const payload = {
@@ -48,6 +65,7 @@ export default function Productos() {
     try {
       await api.crearProducto(payload);
       setNuevoProducto({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "", imagen: "" });
+      if (fileInputRef.current) fileInputRef.current.value = "";
       fetchData();
     } catch (error) {
       console.error("Error al agregar producto:", error);
@@ -242,12 +260,33 @@ export default function Productos() {
 
                 <div className="mb-3">
                   <input
-                    type="text"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    data-bs-theme="dark"
                     className="form-control bg-secondary text-white border-0"
-                    placeholder="URL de la Imagen"
-                    value={nuevoProducto.imagen}
-                    onChange={(e) => setNuevoProducto({ ...nuevoProducto, imagen: e.target.value })}
-                  />
+                    onChange={handleCargarImagen}
+                />
+                  {nuevoProducto.imagen && (
+                    <div className="mt-2 d-flex align-items-center gap-3">
+                      <img
+                        src={nuevoProducto.imagen}
+                        alt="Vista previa"
+                        className="rounded border border-info"
+                        style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-warning"
+                        onClick={() => {
+                          setNuevoProducto({ ...nuevoProducto, imagen: "" });
+                          if (fileInputRef.current) fileInputRef.current.value = "";
+                        }}
+                      >
+                        Quitar imagen
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <button type="submit" className="btn btn-success w-100 rounded-pill fw-bold">
