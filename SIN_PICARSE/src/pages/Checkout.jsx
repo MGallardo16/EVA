@@ -3,6 +3,7 @@ import { CartContext } from "../context/CarritoContext";
 import { AuthContext } from "../context/Autenticacion";
 import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { exportarBoletaPDF } from "../utils/GenerarBoletaPDF"
 
 export default function Checkout() {
   const { carrito, total, vaciarCarrito } = useContext(CartContext);
@@ -122,6 +123,13 @@ export default function Checkout() {
           <div className="text-end mt-3 fs-5 fw-bold text-success">
             Total Pagado (IVA incl.): ${Number(boleta.total).toLocaleString("es-CL")}
           </div>
+
+          <button 
+            className="btn btn-outline-danger btn-sm" 
+            onClick={() => exportarBoletaPDF(boleta)}
+          >
+            📄 Descargar Boleta PDF
+          </button>
 
           <button className="btn btn-outline-light mt-4 w-100" onClick={() => navigate("/")}>
             Volver a la Tienda
