@@ -11,45 +11,63 @@ export default function DashboardAdmin() {
     navigate("/");
   };
 
+  const esAdmin = usuario?.rol === "admin";
+  const esVendedor = usuario?.rol === "vendedor";
+
   return (
     <div className="d-flex" style={{ minHeight: "100vh", backgroundColor: "#1e2124" }}>
-      {/* Sidebar lateral con fondo negro oscuro y borde divisor */}
-      <div 
-        className="sidebar p-3 d-flex flex-column text-white border-end border-secondary" 
+      {/*Sidebar lateral */}
+      <div
+        className="sidebar p-3 d-flex flex-column text-white border-end border-secondary"
         style={{ width: "250px", minHeight: "100vh", backgroundColor: "#111315" }}
       >
         <h4 className="border-bottom border-secondary pb-2 text-center fs-5 fw-bold">
-          Panel de Administrador
+          {esVendedor ? "Panel de Vendedor" : "Panel de Administrador"}
         </h4>
-        
+
         {usuario && (
           <div className="text-center mb-3 text-secondary small">
-            Admin: <strong className="text-light">{usuario.nombre_usuario || usuario.nombre_admin}</strong>
+            {esVendedor ? "Vendedor: " : "Admin: "}
+            <strong className="text-light">
+              {usuario.nombre || usuario.nombre_usuario || usuario.nombre_admin}
+            </strong>
           </div>
         )}
 
         <div className="nav flex-column nav-pills flex-grow-1 gap-1">
-          <Link to="/dashboard/usuarios" className="nav-link text-white-50 hover-light py-2">
-            Gestión de usuarios
-          </Link>
+          {esAdmin && (
+            <Link to="/dashboard/usuarios" className="nav-link text-white-50 hover-light py-2">
+              Gestión de usuarios
+            </Link>
+          )}
+
           <Link to="/dashboard/productos" className="nav-link text-white-50 hover-light py-2">
             Gestión de productos
           </Link>
-          <Link to="/dashboard/administradores" className="nav-link text-white-50 hover-light py-2">
-            Gestión de administradores
-          </Link>
+
+          {esAdmin && (
+            <Link to="/dashboard/administradores" className="nav-link text-white-50 hover-light py-2">
+              Gestión de administradores
+            </Link>
+          )}
+
           <Link to="/dashboard/ordenes" className="nav-link text-white-50 hover-light py-2">
             Órdenes / Boletas
           </Link>
-          <Link to="/dashboard/categorias" className="nav-link text-white-50 hover-light py-2">
-            Categorías
-          </Link>
-          <Link to="/dashboard/reportes" className="nav-link text-white-50 hover-light py-2">
-            Reportes
-          </Link>
-          <Link to="/dashboard/perfil" className="nav-link text-white-50 hover-light py-2">
-            Perfil
-          </Link>
+
+          {esAdmin && (
+            <>
+              <Link to="/dashboard/categorias" className="nav-link text-white-50 hover-light py-2">
+                Categorías
+              </Link>
+              <Link to="/dashboard/reportes" className="nav-link text-white-50 hover-light py-2">
+                Reportes
+              </Link>
+              <Link to="/dashboard/perfil" className="nav-link text-white-50 hover-light py-2">
+                Perfil
+              </Link>
+            </>
+          )}
         </div>
 
         <div className="mt-auto pt-3 border-top border-secondary">
@@ -62,8 +80,12 @@ export default function DashboardAdmin() {
         </div>
       </div>
 
-      {/* Área principal con un tono más claro (#1e2124) */}
-      <main id="contenido-principal" className="flex-grow-1 text-white p-4" style={{ backgroundColor: "#1e2124", minHeight: "100vh", overflowY: "auto" }}>
+      {/* Área principal */}
+      <main
+        id="contenido-principal"
+        className="flex-grow-1 text-white p-4"
+        style={{ backgroundColor: "#1e2124", minHeight: "100vh", overflowY: "auto" }}
+      >
         <Outlet />
       </main>
     </div>

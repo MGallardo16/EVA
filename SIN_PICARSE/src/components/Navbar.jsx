@@ -6,25 +6,27 @@ export default function Navbar() {
   const { usuario, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const puedeEntrarDashboard = usuario?.rol === "admin" || usuario?.rol === "vendedor";
+
   return (
     <>
-      <nav 
-        className="navbar navbar-expand-lg navbar-dark bg-dark w-100 p-0" 
+      <nav
+        className="navbar navbar-expand-lg navbar-dark bg-dark w-100 p-0"
         style={{ height: "80px", minHeight: "80px", maxHeight: "80px" }}
       >
         <div className="container-fluid container-lg d-flex justify-content-between align-items-center h-100 px-3">
           <Link className="navbar-brand fw-bold p-0 m-0 d-flex align-items-center" to="/">
-            <img 
-              src="/images/Logo SIN PICARSE.png" 
-              alt="SIN PICARSE" 
-              style={{ width: "auto", height: "76px", objectFit: "contain" }} 
+            <img
+              src="/images/Logo SIN PICARSE.png"
+              alt="SIN PICARSE"
+              style={{ width: "auto", height: "76px", objectFit: "contain" }}
             />
           </Link>
 
-          <button 
-            className="navbar-toggler border-0 shadow-none" 
-            type="button" 
-            data-bs-toggle="collapse" 
+          <button
+            className="navbar-toggler border-0 shadow-none"
+            type="button"
+            data-bs-toggle="collapse"
             data-bs-target="#navbarNav"
             aria-controls="navbarNav"
             aria-expanded="false"
@@ -45,8 +47,8 @@ export default function Navbar() {
 
                 {!usuario ? (
                   <li className="nav-item">
-                    <Link 
-                      className="btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center" 
+                    <Link
+                      className="btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center"
                       style={{ height: "36px", minWidth: "120px" }}
                       to="/login"
                     >
@@ -56,7 +58,7 @@ export default function Navbar() {
                 ) : (
                   <>
                     <li className="nav-item me-lg-3 text-white my-2 my-lg-0">
-                      Bienvenido, <strong>{usuario.nombre_usuario}</strong>
+                      Bienvenido, <strong>{usuario.nombre || usuario.nombre_usuario}</strong>
                     </li>
                     <li className="nav-item">
                       <button
@@ -79,18 +81,18 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {usuario?.rol === "admin" && (
+      {puedeEntrarDashboard && (
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate(usuario.rol === "vendedor" ? "/dashboard/productos" : "/dashboard")}
           className="btn btn-danger rounded-circle position-fixed shadow"
           style={{
             bottom: "20px",
             right: "20px",
             width: "50px",
             height: "50px",
-            zIndex: 1050
+            zIndex: 1050,
           }}
-          title="Ir al Dashboard"
+          title="Ir al Panel"
         >
           ⚙️
         </button>

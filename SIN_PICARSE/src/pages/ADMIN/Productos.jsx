@@ -1,15 +1,21 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../../supabaseClient";
+import { useState, useEffect, useContext } from "react";
+import { api } from "../../services/api";
+import { AuthContext } from "../../context/Autenticacion";
 
 export default function Productos() {
+  const { usuario } = useContext(AuthContext);
+  const esAdmin = usuario?.rol === "admin";
+
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [productoDetalle, setProductoDetalle] = useState(null);
   const [nuevoProducto, setNuevoProducto] = useState({
     nombre: "",
+    descripcion: "",
     precio: "",
     stock: "",
-    categoria_id: "",
-    imagen: ""
+    categoriaId: "",
+    imagen: "",
   });
 
   useEffect(() => {
@@ -17,47 +23,35 @@ export default function Productos() {
   }, []);
 
   const fetchData = async () => {
-    //Carga los productos incluyendo la información de la categoría vinculada
-    const { data: prodData, error: prodError } = await supabase
-      .from("productos")
-      .select(`
-        *,
-        categorias (
-          nombre
-        )
-      `)
-      .order("id", { ascending: true });
+    try {
+      const prodData = await api.getProductos();
+      setProductos(prodData || []);
 
-    if (prodError) console.error("Error al obtener productos:", prodError);
-    else setProductos(prodData || []);
-
-    //Carga las categorías
-    const { data: catData, error: catError } = await supabase
-      .from("categorias")
-      .select("*")
-      .order("nombre", { ascending: true });
-
-    if (catError) console.error("Error al obtener categorías:", catError);
-    else setCategorias(catData || []);
+      const catData = await api.getCategorias();
+      setCategorias(catData || []);
+    } catch (error) {
+      console.error("Error al cargar datos de productos:", error);
+    }
   };
 
   const handleAgregar = async (e) => {
     e.preventDefault();
     const payload = {
       nombre: nuevoProducto.nombre,
+      descripcion: nuevoProducto.descripcion || "Juego de mesa disponible en Sin Picarse.",
       precio: parseInt(nuevoProducto.precio),
       stock: parseInt(nuevoProducto.stock),
-      categoria_id: nuevoProducto.categoria_id ? parseInt(nuevoProducto.categoria_id) : null,
-      imagen: nuevoProducto.imagen || null
+      categoriaId: nuevoProducto.categoriaId ? parseInt(nuevoProducto.categoriaId) : null,
+      imagen: nuevoProducto.imagen || null,
     };
 
-    const { error } = await supabase.from("productos").insert([payload]);
-
-    if (error) {
+    try {
+      await api.crearProducto(payload);
+      setNuevoProducto({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "", imagen: "" });
+      fetchData();
+    } catch (error) {
       console.error("Error al agregar producto:", error);
-    } else {
-      setNuevoProducto({ nombre: "", precio: "", stock: "", categoria_id: "", imagen: "" });
-      fetchData(); // Recarga la lista con las categorías
+      alert(error.message || "Error al crear producto");
     }
   };
 
@@ -65,35 +59,39 @@ export default function Productos() {
     e.preventDefault();
     const id = parseInt(e.target.idProducto.value);
 
-    const { error } = await supabase.from("productos").delete().eq("id", id);
-
-    if (error) {
-      console.error("Error al eliminar producto:", error);
-    } else {
+    try {
+      await api.eliminarProducto(id);
       setProductos((prev) => prev.filter((p) => p.id !== id));
+      if (productoDetalle?.id === id) setProductoDetalle(null);
       e.target.reset();
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+      alert(error.message || "Error al eliminar producto");
     }
   };
 
   return (
     <div className="p-4 w-100 text-white">
-      <h3 className="mb-4">Gestión de Productos</h3>
+      <h3 className="mb-4">
+        {esAdmin ? "Gestión de Productos" : "Catálogo de Productos (Vista Vendedor)"}
+      </h3>
 
       <div className="border border-secondary rounded shadow-sm mb-4" style={{ maxHeight: "380px", overflowY: "auto" }}>
         <table className="table table-dark table-striped table-hover align-middle mb-0 text-start">
           <thead className="table-dark border-bottom border-secondary" style={{ position: "sticky", top: 0, zIndex: 2 }}>
             <tr>
               <th style={{ width: "8%" }}>#</th>
-              <th style={{ width: "32%" }}>Nombre</th>
+              <th style={{ width: "30%" }}>Nombre</th>
               <th style={{ width: "20%" }}>Categoría</th>
               <th style={{ width: "15%" }}>Precio</th>
               <th style={{ width: "12%" }}>Stock</th>
+              <th style={{ width: "15%" }}>Detalle</th>
             </tr>
           </thead>
           <tbody>
             {productos.length === 0 ? (
               <tr>
-                <td colSpan="5" className="text-center text-muted py-3">No hay productos registrados.</td>
+                <td colSpan="6" className="text-center text-muted py-3">No hay productos registrados.</td>
               </tr>
             ) : (
               productos.map((p) => (
@@ -102,11 +100,19 @@ export default function Productos() {
                   <td>{p.nombre}</td>
                   <td>
                     <span className="badge bg-secondary">
-                      {p.categorias?.nombre || "Sin categoría"}
+                      {p.categoria?.nombre || "Sin categoría"}
                     </span>
                   </td>
                   <td className="text-success fw-bold">${Number(p.precio).toLocaleString("es-CL")}</td>
                   <td>{p.stock} u.</td>
+                  <td>
+                    <button
+                      className="btn btn-outline-info btn-sm"
+                      onClick={() => setProductoDetalle(p)}
+                    >
+                      Ver detalle
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
@@ -114,101 +120,144 @@ export default function Productos() {
         </table>
       </div>
 
-
-      <div className="row align-items-start g-4">
-        <div className="col-md-4">
-          <div className="card bg-dark text-white border-secondary p-3 shadow-sm">
-            <h5 className="card-title mb-3">Eliminar Producto</h5>
-            <form onSubmit={handleEliminar}>
-              <div className="mb-3 d-flex align-items-center gap-2">
-                <label htmlFor="idProducto" className="form-label mb-0 fw-bold">ID:</label>
-                <input
-                  type="number"
-                  name="idProducto"
-                  className="form-control bg-secondary text-white border-0"
-                  min="1"
-                  placeholder="ID a eliminar"
-                  required
+      {/* Tarjeta de detalle de producto seleccionado (Visible para VENDEDOR y ADMIN) */}
+      {productoDetalle && (
+        <div className="card bg-dark text-white border-info mb-4 p-3 shadow">
+          <div className="d-flex justify-content-between align-items-center border-bottom border-secondary pb-2 mb-3">
+            <h5 className="mb-0 text-info">Detalle del Producto #{productoDetalle.id}</h5>
+            <button className="btn btn-sm btn-outline-secondary" onClick={() => setProductoDetalle(null)}>
+              Cerrar ✕
+            </button>
+          </div>
+          <div className="row align-items-center">
+            {productoDetalle.imagen && (
+              <div className="col-md-3">
+                <img
+                  src={productoDetalle.imagen}
+                  alt={productoDetalle.nombre}
+                  className="img-fluid rounded"
+                  style={{ maxHeight: "140px", objectFit: "cover" }}
                 />
               </div>
-              <button type="submit" className="btn btn-outline-danger w-100 rounded-pill">
-                Eliminar Producto
-              </button>
-            </form>
+            )}
+            <div className="col-md-9">
+              <h5>{productoDetalle.nombre}</h5>
+              <p className="text-secondary small mb-1">{productoDetalle.descripcion || "Sin descripción"}</p>
+              <p className="mb-1"><strong>Categoría:</strong> {productoDetalle.categoria?.nombre || "Sin categoría"}</p>
+              <p className="mb-1"><strong>Precio:</strong> <span className="text-success">${Number(productoDetalle.precio).toLocaleString("es-CL")}</span></p>
+              <p className="mb-0"><strong>Stock disponible:</strong> {productoDetalle.stock} unidades</p>
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="col-md-8">
-          <div className="card bg-dark text-white border-secondary p-3 shadow-sm">
-            <h5 className="card-title mb-3">Agregar Nuevo Producto</h5>
-            <form onSubmit={handleAgregar}>
-              <div className="row g-2 mb-2">
-                <div className="col-md-6">
+      {/* Formularios de creación/eliminación: SOLO visibles para ADMIN */}
+      {esAdmin && (
+        <div className="row align-items-start g-4">
+          <div className="col-md-4">
+            <div className="card bg-dark text-white border-secondary p-3 shadow-sm">
+              <h5 className="card-title mb-3">Eliminar Producto</h5>
+              <form onSubmit={handleEliminar}>
+                <div className="mb-3 d-flex align-items-center gap-2">
+                  <label htmlFor="idProducto" className="form-label mb-0 fw-bold">ID:</label>
+                  <input
+                    type="number"
+                    name="idProducto"
+                    className="form-control bg-secondary text-white border-0"
+                    min="1"
+                    placeholder="ID a eliminar"
+                    required
+                  />
+                </div>
+                <button type="submit" className="btn btn-outline-danger w-100 rounded-pill">
+                  Eliminar Producto
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div className="col-md-8">
+            <div className="card bg-dark text-white border-secondary p-3 shadow-sm">
+              <h5 className="card-title mb-3">Agregar Nuevo Producto</h5>
+              <form onSubmit={handleAgregar}>
+                <div className="row g-2 mb-2">
+                  <div className="col-md-6">
+                    <input
+                      type="text"
+                      className="form-control bg-secondary text-white border-0"
+                      placeholder="Nombre del juego"
+                      value={nuevoProducto.nombre}
+                      onChange={(e) => setNuevoProducto({ ...nuevoProducto, nombre: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <select
+                      className="form-select bg-secondary text-white border-0"
+                      value={nuevoProducto.categoriaId}
+                      onChange={(e) => setNuevoProducto({ ...nuevoProducto, categoriaId: e.target.value })}
+                    >
+                      <option value="">Seleccionar Categoría...</option>
+                      {categorias.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="row g-2 mb-2">
+                  <div className="col-md-6">
+                    <input
+                      type="number"
+                      className="form-control bg-secondary text-white border-0"
+                      placeholder="Precio ($)"
+                      value={nuevoProducto.precio}
+                      onChange={(e) => setNuevoProducto({ ...nuevoProducto, precio: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <input
+                      type="number"
+                      className="form-control bg-secondary text-white border-0"
+                      placeholder="Stock inicial"
+                      value={nuevoProducto.stock}
+                      onChange={(e) => setNuevoProducto({ ...nuevoProducto, stock: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-2">
                   <input
                     type="text"
                     className="form-control bg-secondary text-white border-0"
-                    placeholder="Nombre del juego"
-                    value={nuevoProducto.nombre}
-                    onChange={(e) => setNuevoProducto({ ...nuevoProducto, nombre: e.target.value })}
-                    required
+                    placeholder="Descripción breve"
+                    value={nuevoProducto.descripcion}
+                    onChange={(e) => setNuevoProducto({ ...nuevoProducto, descripcion: e.target.value })}
                   />
                 </div>
-                <div className="col-md-6">
-                  <select
-                    className="form-select bg-secondary text-white border-0"
-                    value={nuevoProducto.categoria_id}
-                    onChange={(e) => setNuevoProducto({ ...nuevoProducto, categoria_id: e.target.value })}
-                  >
-                    <option value="">Seleccionar Categoría...</option>
-                    {categorias.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
 
-              <div className="row g-2 mb-2">
-                <div className="col-md-6">
+                <div className="mb-3">
                   <input
-                    type="number"
+                    type="text"
                     className="form-control bg-secondary text-white border-0"
-                    placeholder="Precio ($)"
-                    value={nuevoProducto.precio}
-                    onChange={(e) => setNuevoProducto({ ...nuevoProducto, precio: e.target.value })}
-                    required
+                    placeholder="URL de la Imagen"
+                    value={nuevoProducto.imagen}
+                    onChange={(e) => setNuevoProducto({ ...nuevoProducto, imagen: e.target.value })}
                   />
                 </div>
-                <div className="col-md-6">
-                  <input
-                    type="number"
-                    className="form-control bg-secondary text-white border-0"
-                    placeholder="Stock inicial"
-                    value={nuevoProducto.stock}
-                    onChange={(e) => setNuevoProducto({ ...nuevoProducto, stock: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
 
-              <div className="mb-3">
-                <input
-                  type="text"
-                  className="form-control bg-secondary text-white border-0"
-                  placeholder="URL de la Imagen"
-                  value={nuevoProducto.imagen}
-                  onChange={(e) => setNuevoProducto({ ...nuevoProducto, imagen: e.target.value })}
-                />
-              </div>
-
-              <button type="submit" className="btn btn-success w-100 rounded-pill fw-bold">
-                Guardar Producto
-              </button>
-            </form>
+                <button type="submit" className="btn btn-success w-100 rounded-pill fw-bold">
+                  Guardar Producto
+                </button>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

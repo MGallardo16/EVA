@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ProductCard from "../components/CartaProducto";
-import { supabase } from "../supabaseClient";
+import { api } from "../services/api";
 
 export default function Productos() {
   const [productos, setProductos] = useState([]);
@@ -9,17 +9,10 @@ export default function Productos() {
   useEffect(() => {
     const obtenerProductos = async () => {
       try {
-        const { data, error } = await supabase
-          .from("productos")
-          .select("*");
-
-        if (error) {
-          console.error("Error al obtener productos:", error);
-        } else {
-          setProductos(data);
-        }
+        const data = await api.getProductos();
+        setProductos(data || []);
       } catch (err) {
-        console.error("Error de conexión:", err);
+        console.error("Error al obtener productos:", err);
       } finally {
         setCargando(false);
       }

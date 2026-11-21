@@ -1,47 +1,41 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../../supabaseClient";
+import { api } from "../../services/api";
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [nuevoUsuario, setNuevoUsuario] = useState({
-    nombre_usuario: "",
+    nombre: "",
     correo: "",
-    contraseña: ""
+    password: "",
+    rol: "CLIENTE",
   });
-  
-  const [visibleIds, setVisibleIds] = useState([]);
-
-  const toggleVisibility = (id) => {
-    setVisibleIds((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
-    );
-  };
 
   useEffect(() => {
     fetchUsuarios();
   }, []);
 
   const fetchUsuarios = async () => {
-    const { data, error } = await supabase.from("usuarios").select("*").order("id", { ascending: true });
-    if (error) {
+    try {
+      const data = await api.getUsuarios();
+      if (data) {
+        setUsuarios(data.filter((u) => u.rol === "CLIENTE" || u.rol === "VENDEDOR"));
+      }
+    } catch (error) {
       console.error("Error al obtener usuarios:", error);
-    } else if (data) {
-      setUsuarios(data);
     }
   };
 
   const handleAgregar = async (e) => {
     e.preventDefault();
-    const { data, error } = await supabase
-      .from("usuarios")
-      .insert([nuevoUsuario])
-      .select();
-
-    if (error) {
+    try {
+      const creado = await api.crearUsuario(nuevoUsuario);
+      if (creado) {
+        setUsuarios((prev) => [...prev, creado]);
+        setNuevoUsuario({ nombre: "", correo: "", password: "", rol: "CLIENTE" });
+      }
+    } catch (error) {
       console.error("Error al agregar usuario:", error);
-    } else if (data) {
-      setUsuarios((prev) => [...prev, ...data]);
-      setNuevoUsuario({ nombre_usuario: "", correo: "", contraseña: "" });
+      alert(error.message || "Error al crear usuario");
     }
   };
 
@@ -49,19 +43,19 @@ export default function Usuarios() {
     e.preventDefault();
     const id = parseInt(e.target.idEliminar.value);
 
-    const { error } = await supabase.from("usuarios").delete().eq("id", id);
-
-    if (error) {
-      console.error("Error al eliminar usuario:", error);
-    } else {
+    try {
+      await api.eliminarUsuario(id);
       setUsuarios((prev) => prev.filter((u) => u.id !== id));
       e.target.reset();
+    } catch (error) {
+      console.error("Error al eliminar usuario:", error);
+      alert(error.message || "Error al eliminar usuario");
     }
   };
 
   return (
     <div className="p-4 w-100 text-white">
-      <h3 className="mb-4">Gestión de Usuarios / Clientes</h3>
+      <h3 className="mb-4">Gestión de Usuarios / Clientes y Vendedores</h3>
 
       <div className="border border-secondary rounded shadow-sm mb-4" style={{ maxHeight: "350px", overflowY: "auto" }}>
         <table className="table table-dark table-striped table-hover align-middle mb-0 text-start">
@@ -70,6 +64,7 @@ export default function Usuarios() {
               <th style={{ width: "10%" }}>#</th>
               <th style={{ width: "30%" }}>Usuario</th>
               <th style={{ width: "35%" }}>Correo</th>
+              <th style={{ width: "25%" }}>Rol</th>
             </tr>
           </thead>
           <tbody>
@@ -81,8 +76,13 @@ export default function Usuarios() {
               usuarios.map((u) => (
                 <tr key={u.id}>
                   <td className="fw-bold ps-3">{u.id}</td>
-                  <td>{u.nombre_usuario}</td>
+                  <td>{u.nombre}</td>
                   <td>{u.correo}</td>
+                  <td>
+                    <span className={`badge ${u.rol === "VENDEDOR" ? "bg-warning text-dark" : "bg-info text-dark"}`}>
+                      {u.rol}
+                    </span>
+                  </td>
                 </tr>
               ))
             )}
@@ -123,8 +123,8 @@ export default function Usuarios() {
                     type="text"
                     className="form-control bg-secondary text-white border-0"
                     placeholder="Nombre de usuario"
-                    value={nuevoUsuario.nombre_usuario}
-                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, nombre_usuario: e.target.value })}
+                    value={nuevoUsuario.nombre}
+                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, nombre: e.target.value })}
                     required
                   />
                 </div>
@@ -140,15 +140,27 @@ export default function Usuarios() {
                 </div>
               </div>
 
-              <div className="mb-3">
-                <input
-                  type="password"
-                  className="form-control bg-secondary text-white border-0"
-                  placeholder="Contraseña"
-                  value={nuevoUsuario.contraseña}
-                  onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, contraseña: e.target.value })}
-                  required
-                />
+              <div className="row g-2 mb-3">
+                <div className="col-md-7">
+                  <input
+                    type="password"
+                    className="form-control bg-secondary text-white border-0"
+                    placeholder="Contraseña"
+                    value={nuevoUsuario.password}
+                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="col-md-5">
+                  <select
+                    className="form-select bg-secondary text-white border-0"
+                    value={nuevoUsuario.rol}
+                    onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}
+                  >
+                    <option value="CLIENTE">Rol: CLIENTE</option>
+                    <option value="VENDEDOR">Rol: VENDEDOR</option>
+                  </select>
+                </div>
               </div>
 
               <button type="submit" className="btn btn-success w-100 rounded-pill fw-bold">

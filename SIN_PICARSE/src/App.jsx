@@ -16,7 +16,7 @@ import Contacto from "./pages/Contacto";
 import Login from "./pages/Login";
 
 import Dashboard from "./pages/DashboardAdmin";
-import Usuarios from "./pages/ADMIN/Usuarios.jsx"; 
+import Usuarios from "./pages/ADMIN/Usuarios.jsx";
 import Administradores from "./pages/ADMIN/Administradores.jsx";
 import Categorias from "./pages/ADMIN/Categorias.jsx";
 import Ordenes from "./pages/ADMIN/Ordenes.jsx";
@@ -25,6 +25,7 @@ import Perfil from "./pages/ADMIN/Perfil.jsx";
 import ProductosAdmin from "./pages/ADMIN/Productos.jsx";
 import Checkout from "./pages/Checkout.jsx";
 
+// Permite acceso al panel tanto a ADMIN como a VENDEDOR
 function PrivateRoute({ children }) {
   const { usuario } = useContext(AuthContext);
 
@@ -32,8 +33,19 @@ function PrivateRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (usuario.rol !== "admin") {
+  if (usuario.rol !== "admin" && usuario.rol !== "vendedor") {
     return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+// Restringe rutas exclusivas del Administrador (el Vendedor es redirigido a productos)
+function AdminOnlyRoute({ children }) {
+  const { usuario } = useContext(AuthContext);
+
+  if (usuario?.rol !== "admin") {
+    return <Navigate to="/dashboard/productos" replace />;
   }
 
   return children;
@@ -41,13 +53,10 @@ function PrivateRoute({ children }) {
 
 function LayoutContent() {
   const location = useLocation();
-  
-  // Detecta si la ruta actual empieza por /dashboard
   const esRutaAdmin = location.pathname.startsWith("/dashboard");
 
   return (
     <div className="d-flex flex-column min-vh-100">
-
       {!esRutaAdmin && <Navbar />}
 
       <main className="flex-grow-1">
@@ -61,7 +70,6 @@ function LayoutContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/checkout" element={<Checkout />} />
 
-
           <Route
             path="/dashboard/*"
             element={
@@ -70,13 +78,16 @@ function LayoutContent() {
               </PrivateRoute>
             }
           >
-            <Route path="usuarios" element={<Usuarios />} />
-            <Route path="administradores" element={<Administradores />} />
+            {/* Accesibles para ADMIN y VENDEDOR */}
             <Route path="productos" element={<ProductosAdmin />} />
-            <Route path="categorias" element={<Categorias />} />
             <Route path="ordenes" element={<Ordenes />} />
-            <Route path="reportes" element={<Reportes />} />
-            <Route path="perfil" element={<Perfil />} />
+
+            {/* Zonas exclusivas de ADMIN */}
+            <Route path="usuarios" element={<AdminOnlyRoute><Usuarios /></AdminOnlyRoute>} />
+            <Route path="administradores" element={<AdminOnlyRoute><Administradores /></AdminOnlyRoute>} />
+            <Route path="categorias" element={<AdminOnlyRoute><Categorias /></AdminOnlyRoute>} />
+            <Route path="reportes" element={<AdminOnlyRoute><Reportes /></AdminOnlyRoute>} />
+            <Route path="perfil" element={<AdminOnlyRoute><Perfil /></AdminOnlyRoute>} />
           </Route>
         </Routes>
       </main>

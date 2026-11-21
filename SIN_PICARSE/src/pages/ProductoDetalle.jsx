@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { CartContext } from "../context/CarritoContext";
-import { supabase } from "../supabaseClient";
+import { api } from "../services/api";
 
 export default function ProductoDetalle() {
   const { id } = useParams();
@@ -12,19 +12,10 @@ export default function ProductoDetalle() {
   useEffect(() => {
     const obtenerProducto = async () => {
       try {
-        const { data, error } = await supabase
-          .from("productos")
-          .select("*")
-          .eq("id", id)
-          .single();
-
-        if (error) {
-          console.error("Error al buscar producto:", error);
-        } else {
-          setProducto(data);
-        }
+        const data = await api.getProductoById(id);
+        setProducto(data);
       } catch (err) {
-        console.error("Error de conexión:", err);
+        console.error("Error al buscar producto:", err);
       } finally {
         setCargando(false);
       }
@@ -58,13 +49,18 @@ export default function ProductoDetalle() {
         </div>
         <div className="col-md-6">
           <h3 className="fw-bold">{producto.nombre}</h3>
-          <p className="fs-4 text-danger fw-bold">${producto.precio}</p>
+          {producto.categoria && (
+            <span className="badge bg-secondary mb-2">{producto.categoria.nombre}</span>
+          )}
+          <p className="fs-4 text-danger fw-bold">${Number(producto.precio).toLocaleString("es-CL")}</p>
           <p className="text-muted">{producto.descripcion}</p>
+          <p className="small text-secondary">Stock disponible: {producto.stock} unidades</p>
           <button
             className="btn btn-danger btn-lg mt-3"
             onClick={() => agregarAlCarrito(producto)}
+            disabled={producto.stock <= 0}
           >
-            Añadir al carrito
+            {producto.stock > 0 ? "Añadir al carrito" : "Sin stock"}
           </button>
         </div>
       </div>

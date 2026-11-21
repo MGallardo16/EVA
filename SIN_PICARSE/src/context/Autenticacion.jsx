@@ -1,16 +1,30 @@
 import { createContext, useState } from "react";
-import { supabase } from "../supabaseClient";
+import { api } from "../services/api";
 import { dominioValido } from "../utils/Validaciones";
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // Inicializa con sesión activa si existe en localStorage
   const [usuario, setUsuario] = useState(
     JSON.parse(localStorage.getItem("usuarioActivo")) || null
   );
 
-  // LOGIN (Conectado a Supabase)
+  // "Normaliza" el objeto del backend para mantener compatibilidad con componentes previos
+  const normalizarUsuario = (authData, extra = {}) => {
+    const rolLower = authData.rol ? authData.rol.toLowerCase() : "cliente";
+    return {
+      id: authData.id,
+      nombre: authData.nombre,
+      nombre_usuario: authData.nombre,
+      nombre_admin: authData.nombre,
+      correo: authData.correo,
+      rol: rolLower, // "admin", "vendedor" o "cliente"
+      rolBackend: authData.rol, // "ADMIN", "VENDEDOR" o "CLIENTE"
+      ...extra,
+    };
+  };
+
+  // LOGIN (Conectado al Spring Boot /api/v1/auth/login)
   const login = async (correo, contraseña) => {
     if (!dominioValido(correo)) {
       alert("Correo inválido. Solo se permiten @gmail.com, @duocuc.cl o @profesor.duocuc.cl");
@@ -18,55 +32,33 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      // 1. Buscar en administradores (usa 'nombre_admin')
-      const { data: admin } = await supabase
-        .from("administradores")
-        .select("*")
-        .eq("correo", correo)
-        .eq("contraseña", contraseña)
-        .maybeSingle();
+      const data = await api.login(correo, contraseña);
 
-      if (admin) {
-        const adminData = {
-          ...admin,
-          nombre_usuario: admin.nombre_admin,
-          rol: "admin",
-        };
-        setUsuario(adminData);
-        localStorage.setItem("usuarioActivo", JSON.stringify(adminData));
-        localStorage.setItem("isLoggedIn", "true");
-        alert(`¡Bienvenido/a Administrador ${admin.nombre_admin}!`);
-        return adminData;
+      // Guardar el JWT para futuras peticiones protegidas
+      localStorage.setItem("token", data.token);
+
+      const userData = normalizarUsuario(data);
+      setUsuario(userData);
+      localStorage.setItem("usuarioActivo", JSON.stringify(userData));
+      localStorage.setItem("isLoggedIn", "true");
+
+      if (userData.rol === "admin") {
+        alert(`¡Bienvenido/a Administrador ${userData.nombre}!`);
+      } else if (userData.rol === "vendedor") {
+        alert(`¡Bienvenido/a Vendedor ${userData.nombre}!`);
+      } else {
+        alert(`¡Bienvenido/a ${userData.nombre}!`);
       }
 
-      // 2. Buscar en usuarios (clientes)
-      const { data: cliente } = await supabase
-        .from("usuarios")
-        .select("*")
-        .eq("correo", correo)
-        .eq("contraseña", contraseña)
-        .maybeSingle();
-
-      if (cliente) {
-        const clienteData = { ...cliente, rol: "cliente" };
-        setUsuario(clienteData);
-        localStorage.setItem("usuarioActivo", JSON.stringify(clienteData));
-        localStorage.setItem("isLoggedIn", "true");
-        alert(`¡Bienvenido/a ${cliente.nombre_usuario}!`);
-        return clienteData;
-      }
-
-      alert("Correo o contraseña incorrectos.");
-      return null;
-
+      return userData;
     } catch (error) {
       console.error("Error en login:", error);
-      alert("Error de conexión con la base de datos.");
+      alert(error.message || "Correo o contraseña incorrectos.");
       return null;
     }
   };
 
-  //Login con google
+  // Login con Google (sincronizado con el backend)
   const loginWithGoogle = async (datosGoogle) => {
     const { email, name, picture } = datosGoogle;
 
@@ -75,76 +67,24 @@ export function AuthProvider({ children }) {
       return null;
     }
 
+    const googlePass = `GoogleAuth_${email}_2026`;
+
     try {
-      const { data: admin } = await supabase
-        .from("administradores")
-        .select("*")
-        .eq("correo", email)
-        .maybeSingle();
-
-      if (admin) {
-        const adminData = {
-          ...admin,
-          nombre_usuario: admin.nombre_admin,
-          avatar: picture,
-          rol: "admin",
-          provider: "google"
-        };
-        setUsuario(adminData);
-        localStorage.setItem("usuarioActivo", JSON.stringify(adminData));
-        localStorage.setItem("isLoggedIn", "true");
-        alert(`¡Bienvenido/a Administrador ${admin.nombre_admin}!`);
-        return adminData;
+      let data;
+      try {
+        data = await api.login(email, googlePass);
+      } catch {
+        data = await api.registro(name, email, googlePass);
       }
 
-      const { data: cliente } = await supabase
-        .from("usuarios")
-        .select("*")
-        .eq("correo", email)
-        .maybeSingle();
+      localStorage.setItem("token", data.token);
+      const userData = normalizarUsuario(data, { avatar: picture, provider: "google" });
 
-      if (cliente) {
-        const clienteData = {
-          ...cliente,
-          avatar: picture,
-          rol: "cliente",
-          provider: "google"
-        };
-        setUsuario(clienteData);
-        localStorage.setItem("usuarioActivo", JSON.stringify(clienteData));
-        localStorage.setItem("isLoggedIn", "true");
-        alert(`¡Bienvenido/a ${cliente.nombre_usuario}!`);
-        return clienteData;
-      }
-
-      //Si no existe en la base de datos, lo registramos automáticamente como cliente
-      const { data: nuevoUsuario, error } = await supabase
-        .from("usuarios")
-        .insert([
-          {
-            nombre_usuario: name,
-            correo: email,
-            contraseña: null, //no requiere clave local
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const nuevoClienteData = {
-        ...nuevoUsuario,
-        avatar: picture,
-        rol: "cliente",
-        provider: "google"
-      };
-
-      setUsuario(nuevoClienteData);
-      localStorage.setItem("usuarioActivo", JSON.stringify(nuevoClienteData));
+      setUsuario(userData);
+      localStorage.setItem("usuarioActivo", JSON.stringify(userData));
       localStorage.setItem("isLoggedIn", "true");
-      alert(`¡Bienvenido/a ${nuevoClienteData.nombre_usuario}!`);
-      return nuevoClienteData;
-
+      alert(`¡Bienvenido/a ${userData.nombre}!`);
+      return userData;
     } catch (error) {
       console.error("Error en loginWithGoogle:", error);
       alert("Error al autenticar con Google.");
@@ -152,7 +92,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // REGISTRO (Inserta directo en la tabla 'usuarios' de Supabase)
+  // REGISTRO (Conectado al Spring Boot /api/v1/auth/registro)
   const registro = async (nombre, correo, contraseña) => {
     if (!dominioValido(correo)) {
       alert("El correo debe ser válido (@gmail.com, @duocuc.cl, @profesor.duocuc.cl)");
@@ -160,41 +100,19 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      // Verificar si ya existe en usuarios
-      const { data: existente } = await supabase
-        .from("usuarios")
-        .select("id")
-        .eq("correo", correo)
-        .maybeSingle();
-
-      if (existente) {
-        alert("Este correo ya está registrado.");
-        return false;
-      }
-
-      // Insertar nuevo usuario
-      const { error } = await supabase.from("usuarios").insert([
-        {
-          nombre_usuario: nombre,
-          correo: correo,
-          contraseña: contraseña,
-        },
-      ]);
-
-      if (error) throw error;
-
+      await api.registro(nombre, correo, contraseña);
       alert("Usuario creado exitosamente");
       return true;
-
     } catch (error) {
       console.error("Error en registro:", error);
-      alert("Error al registrar el usuario en la base de datos.");
+      alert(error.message || "Error al registrar el usuario.");
       return false;
     }
   };
 
   const logout = () => {
     setUsuario(null);
+    localStorage.removeItem("token");
     localStorage.removeItem("usuarioActivo");
     localStorage.removeItem("isLoggedIn");
     alert("Has cerrado sesión con éxito.");

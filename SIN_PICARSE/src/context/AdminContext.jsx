@@ -1,60 +1,85 @@
-import { createContext, useState, useEffect } from "react";
-import { supabase } from "../supabaseClient";
+import { createContext, useState, useEffect, useContext } from "react";
+import { api } from "../services/api";
+import { AuthContext } from "./Autenticacion";
 
 export const AdminContext = createContext();
 
 export function AdminProvider({ children }) {
+  const { usuario } = useContext(AuthContext);
   const [productosAdmin, setProductosAdmin] = useState([]);
   const [usuariosAdmin, setUsuariosAdmin] = useState([]);
   const [admins, setAdmins] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data: productos } = await supabase.from("productos").select("*");
-      const { data: usuarios } = await supabase.from("usuarios").select("*");
-      const { data: administradores } = await supabase.from("administradores").select("*");
-
+  const recargarDatos = async () => {
+    try {
+      // Todos los roles podrán ver productos
+      const productos = await api.getProductos();
       if (productos) setProductosAdmin(productos);
-      if (usuarios) setUsuariosAdmin(usuarios);
-      if (administradores) setAdmins(administradores);
-    };
-    fetchData();
-  }, []);
 
-  const eliminarUsuario = async (id) => {
-    await supabase.from("usuarios").delete().eq("id", id);
-    setUsuariosAdmin(prev => prev.filter(u => u.id !== id));
+      // Solo el ADMIN tiene permiso en el backend para ver /api/v1/usuarios
+      if (usuario?.rol === "admin") {
+        const todosLosUsuarios = await api.getUsuarios();
+        if (todosLosUsuarios) {
+          setUsuariosAdmin(
+            todosLosUsuarios
+              .filter((u) => u.rol === "CLIENTE" || u.rol === "VENDEDOR")
+              .map((u) => ({ ...u, nombre_usuario: u.nombre }))
+          );
+          setAdmins(
+            todosLosUsuarios
+              .filter((u) => u.rol === "ADMIN")
+              .map((a) => ({ ...a, nombre_admin: a.nombre }))
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error cargando datos del panel:", error);
+    }
   };
 
-  const agregarUsuario = async (nombre, correo, contraseña) => {
-    const { data, error } = await supabase.from("usuarios").insert([
-      { nombre_usuario: nombre, correo, contraseña }
-    ]).select();
-    if (!error && data) setUsuariosAdmin(prev => [...prev, ...data]);
+  useEffect(() => {
+    if (usuario) {
+      recargarDatos();
+    }
+  }, [usuario]);
+
+  const eliminarUsuario = async (id) => {
+    await api.eliminarUsuario(id);
+    setUsuariosAdmin((prev) => prev.filter((u) => u.id !== id));
+  };
+
+  const agregarUsuario = async (nombre, correo, contraseña, rol = "CLIENTE") => {
+    const creado = await api.crearUsuario({ nombre, correo, password: contraseña, rol });
+    if (creado) {
+      setUsuariosAdmin((prev) => [...prev, { ...creado, nombre_usuario: creado.nombre }]);
+    }
   };
 
   const eliminarAdmin = async (id) => {
-    await supabase.from("administradores").delete().eq("id", id);
-    setAdmins(prev => prev.filter(a => a.id !== id));
+    await api.eliminarUsuario(id);
+    setAdmins((prev) => prev.filter((a) => a.id !== id));
   };
 
   const agregarAdmin = async (nombre, correo, contraseña) => {
-    const { data, error } = await supabase.from("administradores").insert([
-      { nombre_admin: nombre, correo, contraseña }
-    ]).select();
-    if (!error && data) setAdmins(prev => [...prev, ...data]);
+    const creado = await api.crearUsuario({ nombre, correo, password: contraseña, rol: "ADMIN" });
+    if (creado) {
+      setAdmins((prev) => [...prev, { ...creado, nombre_admin: creado.nombre }]);
+    }
   };
 
   return (
-    <AdminContext.Provider value={{
-      productosAdmin,
-      usuariosAdmin,
-      admins,
-      eliminarUsuario,
-      agregarUsuario,
-      eliminarAdmin,
-      agregarAdmin
-    }}>
+    <AdminContext.Provider
+      value={{
+        productosAdmin,
+        usuariosAdmin,
+        admins,
+        recargarDatos,
+        eliminarUsuario,
+        agregarUsuario,
+        eliminarAdmin,
+        agregarAdmin,
+      }}
+    >
       {children}
     </AdminContext.Provider>
   );

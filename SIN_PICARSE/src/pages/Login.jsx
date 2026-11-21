@@ -5,12 +5,21 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 
 export default function Login() {
-  const { login, registro } = useContext(AuthContext);
-  const [modo, setModo] = useState("login"); // "login" o "registro"
+  const { login, registro, loginWithGoogle } = useContext(AuthContext);
+  const [modo, setModo] = useState("login");
   const navigate = useNavigate();
   const [showPassLogin, setShowPassLogin] = useState(false);
   const [showPassRegistro, setShowPassRegistro] = useState(false);
-  const { loginWithGoogle } = useContext(AuthContext);
+
+  const redirigirPorRol = (usuarioLogueado) => {
+    if (usuarioLogueado.rol === "admin") {
+      navigate("/dashboard");
+    } else if (usuarioLogueado.rol === "vendedor") {
+      navigate("/dashboard/productos");
+    } else {
+      navigate("/");
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -18,13 +27,8 @@ export default function Login() {
     const contraseña = e.target.contraseña.value;
 
     const usuarioLogueado = await login(correo, contraseña);
-
     if (usuarioLogueado) {
-      if (usuarioLogueado.rol === "admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
-      }
+      redirigirPorRol(usuarioLogueado);
     }
   };
 
@@ -34,15 +38,11 @@ export default function Login() {
     const usuarioLogueado = await loginWithGoogle({
       email: decoded.email,
       name: decoded.name,
-      picture: decoded.picture
+      picture: decoded.picture,
     });
 
     if (usuarioLogueado) {
-      if (usuarioLogueado.rol === "admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
-      }
+      redirigirPorRol(usuarioLogueado);
     }
   };
 
@@ -60,14 +60,11 @@ export default function Login() {
 
   return (
     <div className="container d-flex justify-content-center align-items-center flex-grow-1 my-5" style={{ minHeight: "65vh" }}>
-      
       <div className="card p-4 shadow-sm" style={{ maxWidth: "420px", width: "100%", borderRadius: "10px" }}>
-        
         {modo === "login" ? (
-          
           <form onSubmit={handleLogin} className="form-login">
             <h4 className="text-center mb-4">Iniciar Sesión</h4>
-            
+
             <div className="mb-3">
               <label className="form-label text-secondary small">Correo electrónico</label>
               <input
@@ -78,7 +75,7 @@ export default function Login() {
                 required
               />
             </div>
-            
+
             <div className="mb-3">
               <label className="form-label text-secondary small">Contraseña</label>
               <div className="input-group">
@@ -94,7 +91,7 @@ export default function Login() {
                   className="btn btn-outline-secondary"
                   onClick={() => setShowPassLogin(!showPassLogin)}
                 >
-                  {showPassLogin ? "🔓" : "🔒"}  
+                  {showPassLogin ? "🔓" : "🔒"}
                 </button>
               </div>
             </div>
@@ -135,10 +132,9 @@ export default function Login() {
             </div>
           </form>
         ) : (
-          
           <form onSubmit={handleRegistro} className="form-registro">
             <h4 className="text-center mb-4">Crear Cuenta</h4>
-            
+
             <div className="mb-3">
               <label className="form-label text-secondary small">Nombre de usuario</label>
               <input
@@ -165,7 +161,7 @@ export default function Login() {
               <label className="form-label text-secondary small">Contraseña</label>
               <div className="input-group">
                 <input
-                  type={showPassRegistro ? "text" : "password"} 
+                  type={showPassRegistro ? "text" : "password"}
                   name="contraseña"
                   className="form-control"
                   placeholder="••••••••"
@@ -199,7 +195,6 @@ export default function Login() {
             </div>
           </form>
         )}
-
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/Autenticacion";
 import { CartContext } from "../context/CarritoContext";
-import { supabase } from "../supabaseClient";
+import { api } from "../services/api";
 
 export default function Home() {
   const { usuario } = useContext(AuthContext);
@@ -13,15 +13,9 @@ export default function Home() {
   useEffect(() => {
     const obtenerProductos = async () => {
       try {
-        const { data, error } = await supabase
-          .from("productos")
-          .select("*")
-          .limit(4);
-
-        if (error) {
-          console.error("Error al obtener productos:", error);
-        } else if (data) {
-          setDestacados(data);
+        const data = await api.getProductos();
+        if (data) {
+          setDestacados(data.slice(0, 4));
         }
       } catch (err) {
         console.error("Error de conexión:", err);
@@ -58,9 +52,9 @@ export default function Home() {
                 <div className="card-body p-3 d-flex flex-column justify-content-between">
                   <div>
                     <h5 className="card-title fs-6 fw-bold mb-2">{p.nombre}</h5>
-                    <p className="card-text fw-bold text-danger fs-5 mb-3">${p.precio}</p>
+                    <p className="card-text fw-bold text-danger fs-5 mb-3">${Number(p.precio).toLocaleString("es-CL")}</p>
                   </div>
-                  
+
                   <div className="d-grid gap-2">
                     <Link to={`/producto/${p.id}`} className="btn btn-outline-light btn-sm">
                       Ver producto

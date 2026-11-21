@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { CartContext } from "../context/CarritoContext";
 import { AuthContext } from "../context/Autenticacion";
-import { supabase } from "../supabaseClient";
+import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
@@ -10,10 +10,10 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   const [calle, setCalle] = useState("");
-  const [departamento, setDepartamento] = useState(""); // Opcional
+  const [departamento, setDepartamento] = useState("");
   const [region, setRegion] = useState("");
   const [comuna, setComuna] = useState("");
-  const [indicaciones, setIndicaciones] = useState(""); // Opcional
+  const [indicaciones, setIndicaciones] = useState("");
   const [tipoTelefono, setTipoTelefono] = useState("+56 9");
   const [numeroTelefono, setNumeroTelefono] = useState("");
 
@@ -33,78 +33,46 @@ export default function Checkout() {
 
   const handlePagar = async (e) => {
     e.preventDefault();
+
+    if (!usuario) {
+      alert("Debes iniciar sesión para completar tu compra.");
+      navigate("/login");
+      return;
+    }
+
     setProcesando(true);
 
     const telefonoCompleto = `${tipoTelefono} ${numeroTelefono}`;
-    const direccionCompleta = {
-      calle,
-      departamento,
-      region,
-      comuna,
-      indicaciones
+    const direccionFormateada = `${calle}${departamento ? ", Depto " + departamento : ""}, ${comuna}, ${region}`;
+
+    const payload = {
+      direccionEnvio: direccionFormateada,
+      telefono: telefonoCompleto,
+      indicaciones: indicaciones || "",
+      items: carrito.map((item) => ({
+        productoId: item.id,
+        cantidad: item.cantidad,
+      })),
     };
 
-    const detalleTexto = carrito
-      .map((item) => `${item.nombre} (x${item.cantidad})`)
-      .join(", ");
-
-    const nombreUsuario = usuario
-      ? usuario.nombre_usuario || usuario.nombre_admin || usuario.correo
-      : "Cliente Invitado";
-
     try {
-      const { data, error } = await supabase
-        .from("ordenes")
-        .insert([
-          {
-            usuario: nombreUsuario,
-            detalle: detalleTexto,
-            total: Math.round(total),
-            direccion_envio: direccionCompleta,
-            telefono: telefonoCompleto,
-            items: carrito,
-            fecha: new Date().toISOString()
-          }
-        ])
-        .select()
-        .single();
+      const boletaCreada = await api.crearBoleta(payload);
 
-      if (error) {
-        console.error("Error al registrar orden:", error);
-        alert("Ocurrió un error al procesar el pago.");
-      } else {
-        for (const item of carrito) {
-          const { data: productoActual, error: errorStock } = await supabase
-            .from("productos")
-            .select("stock")
-            .eq("id", item.id)
-            .single();
+      setBoleta({
+        idOrden: boletaCreada.id,
+        fecha: new Date(boletaCreada.fecha).toLocaleString("es-CL"),
+        usuario: boletaCreada.usuario?.nombre || usuario.nombre || usuario.correo,
+        items: [...carrito],
+        total: boletaCreada.total,
+        direccion: boletaCreada.direccionEnvio,
+        telefono: boletaCreada.telefono,
+        indicaciones: boletaCreada.indicaciones,
+      });
 
-          if (!errorStock && productoActual) {
-            const nuevoStock = Math.max(0, productoActual.stock - item.cantidad);
-
-            await supabase
-              .from("productos")
-              .update({ stock: nuevoStock })
-              .eq("id", item.id);
-          }
-        }
-
-        setBoleta({
-          idOrden: data.id,
-          fecha: new Date().toLocaleString("es-CL"),
-          usuario: nombreUsuario,
-          items: [...carrito],
-          total: Math.round(total),
-          direccion: `${calle} ${departamento ? "Depto " + departamento : ""}, ${comuna}, ${region}`,
-          telefono: telefonoCompleto,
-          indicaciones
-        });
-
-        if (vaciarCarrito) vaciarCarrito();
-      }
+      if (vaciarCarrito) vaciarCarrito();
     } catch (err) {
       console.error("Error en el checkout:", err);
+      alert(err.message || "Ocurrió un error al procesar el pago.");
     } finally {
       setProcesando(false);
     }
@@ -152,7 +120,7 @@ export default function Checkout() {
           </table>
 
           <div className="text-end mt-3 fs-5 fw-bold text-success">
-            Total Pagado: ${boleta.total.toLocaleString("es-CL")}
+            Total Pagado (IVA incl.): ${Number(boleta.total).toLocaleString("es-CL")}
           </div>
 
           <button className="btn btn-outline-light mt-4 w-100" onClick={() => navigate("/")}>

@@ -1,47 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../../supabaseClient";
+import { AuthContext } from "../../context/Autenticacion";
+import { api } from "../../services/api";
 
 export default function Perfil() {
-  const [perfil, setPerfil] = useState({ id: null, nombre_admin: "", correo: "", contraseña: "" });
+  const { usuario } = useContext(AuthContext);
+  const [nombre, setNombre] = useState(usuario?.nombre || "");
+  const [correo, setCorreo] = useState(usuario?.correo || "");
+  const [password, setPassword] = useState("");
   const [mensaje, setMensaje] = useState({ tipo: "", texto: "" });
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchPerfil();
-  }, []);
-
-  const fetchPerfil = async () => {
-    const { data, error } = await supabase.from("administradores").select("*").limit(1).maybeSingle();
-    if (error) {
-      console.error("Error al obtener perfil:", error);
-    } else if (data) {
-      setPerfil(data);
-    }
-  };
 
   const guardarPerfil = async (e) => {
     e.preventDefault();
     setMensaje({ tipo: "", texto: "" });
 
-    if (!perfil.id) {
-      setMensaje({ tipo: "danger", texto: "No se encontró un perfil para actualizar." });
+    if (!usuario?.id) {
+      setMensaje({ tipo: "danger", texto: "No se encontró un perfil activo para actualizar." });
       return;
     }
 
-    const { error } = await supabase
-      .from("administradores")
-      .update({
-        nombre_admin: perfil.nombre_admin,
-        correo: perfil.correo,
-        contraseña: perfil.contraseña
-      })
-      .eq("id", perfil.id);
-
-    if (error) {
-      setMensaje({ tipo: "danger", texto: "Error al actualizar el perfil." });
-    } else {
+    try {
+      await api.actualizarUsuario(usuario.id, { nombre, correo, password });
+      setPassword("");
       setMensaje({ tipo: "success", texto: "Perfil actualizado correctamente." });
+    } catch (error) {
+      setMensaje({ tipo: "danger", texto: error.message || "Error al actualizar el perfil." });
     }
   };
 
@@ -73,8 +57,8 @@ export default function Perfil() {
                 <input
                   type="text"
                   className="form-control bg-secondary text-white border-0"
-                  value={perfil.nombre_admin || ""}
-                  onChange={(e) => setPerfil({ ...perfil, nombre_admin: e.target.value })}
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
                   required
                 />
               </div>
@@ -84,20 +68,20 @@ export default function Perfil() {
                 <input
                   type="email"
                   className="form-control bg-secondary text-white border-0"
-                  value={perfil.correo || ""}
-                  onChange={(e) => setPerfil({ ...perfil, correo: e.target.value })}
+                  value={correo}
+                  onChange={(e) => setCorreo(e.target.value)}
                   required
                 />
               </div>
 
               <div className="mb-4">
-                <label className="form-label text-start d-block">Contraseña:</label>
+                <label className="form-label text-start d-block">Nueva Contraseña (opcional):</label>
                 <input
                   type="password"
                   className="form-control bg-secondary text-white border-0"
-                  value={perfil.contraseña || ""}
-                  onChange={(e) => setPerfil({ ...perfil, contraseña: e.target.value })}
-                  required
+                  placeholder="Dejar en blanco para mantener la actual"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
 

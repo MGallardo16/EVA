@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../../supabaseClient";
+import { api } from "../../services/api";
 
 export default function Categorias() {
   const [categorias, setCategorias] = useState([]);
@@ -10,26 +10,25 @@ export default function Categorias() {
   }, []);
 
   const fetchCategorias = async () => {
-    const { data, error } = await supabase.from("categorias").select("*");
-    if (error) {
+    try {
+      const data = await api.getCategorias();
+      if (data) setCategorias(data);
+    } catch (error) {
       console.error("Error al obtener categorías:", error);
-    } else if (data) {
-      setCategorias(data);
     }
   };
 
   const handleAgregar = async (e) => {
     e.preventDefault();
-    const { data, error } = await supabase
-      .from("categorias")
-      .insert([{ nombre }])
-      .select();
-
-    if (error) {
+    try {
+      const creada = await api.crearCategoria({ nombre });
+      if (creada) {
+        setCategorias((prev) => [...prev, creada]);
+        setNombre("");
+      }
+    } catch (error) {
       console.error("Error al agregar categoría:", error);
-    } else if (data) {
-      setCategorias((prev) => [...prev, ...data]);
-      setNombre("");
+      alert(error.message || "Error al crear categoría");
     }
   };
 
@@ -37,16 +36,13 @@ export default function Categorias() {
     e.preventDefault();
     const id = parseInt(e.target.categoriaId.value);
 
-    const { error } = await supabase
-      .from("categorias")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      console.error("Error al eliminar categoría:", error);
-    } else {
+    try {
+      await api.eliminarCategoria(id);
       setCategorias((prev) => prev.filter((c) => c.id !== id));
       e.target.reset();
+    } catch (error) {
+      console.error("Error al eliminar categoría:", error);
+      alert("No se puede eliminar la categoría porque tiene productos asociados.");
     }
   };
 
@@ -80,7 +76,6 @@ export default function Categorias() {
       </div>
 
       <div className="row align-items-center g-4">
-        
         <div className="col-md-5">
           <div className="card bg-dark text-white border-secondary p-3 shadow-sm">
             <h5 className="card-title mb-3">Eliminar categoría</h5>

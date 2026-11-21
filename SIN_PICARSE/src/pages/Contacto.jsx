@@ -1,45 +1,19 @@
 import { useState } from "react";
-import { supabase } from "../supabaseClient";
 
 export default function Contacto() {
   const [nombre, setNombre] = useState("");
-  const [correo, setCorreo] = useState(""); // Cambiado a correo
+  const [correo, setCorreo] = useState("");
   const [asunto, setAsunto] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [enviado, setEnviado] = useState(false);
-  const [cargando, setCargando] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setCargando(true);
-
-    try {
-      // Se inserta usando 'correo' para que coincida con la columna de Supabase
-      const { error } = await supabase.from("mensajes_contacto").insert([
-        {
-          nombre,
-          correo, // <--- Columna 'correo' de tu tabla
-          asunto,
-          mensaje,
-          fecha: new Date().toISOString()
-        }
-      ]);
-
-      if (error) {
-        console.error("Error al enviar mensaje:", error);
-        alert("Ocurrió un error al enviar el mensaje. Inténtalo nuevamente.");
-      } else {
-        setEnviado(true);
-        setNombre("");
-        setCorreo("");
-        setAsunto("");
-        setMensaje("");
-      }
-    } catch (err) {
-      console.error("Error inesperado:", err);
-    } finally {
-      setCargando(false);
-    }
+    setEnviado(true);
+    setNombre("");
+    setCorreo("");
+    setAsunto("");
+    setMensaje("");
   };
 
   return (
@@ -119,9 +93,8 @@ export default function Contacto() {
               <button
                 type="submit"
                 className="btn btn-danger w-100 fw-bold"
-                disabled={cargando}
               >
-                {cargando ? "Enviando..." : "Enviar Mensaje"}
+                Enviar Mensaje
               </button>
             </form>
           </div>
