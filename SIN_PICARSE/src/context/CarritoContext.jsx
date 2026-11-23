@@ -1,15 +1,23 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
+import { AuthContext } from "./Autenticacion";
 
 export const CartContext = createContext();
 
 export function CartProvider({ children }) {
+  const { usuario } = useContext(AuthContext);
+  const storageKey = usuario?.correo ? `carrito_${usuario.correo}` : "carrito_invitado";
+
   const [carrito, setCarrito] = useState(() => {
-    return JSON.parse(localStorage.getItem("carrito")) || [];
+    return JSON.parse(localStorage.getItem(storageKey)) || [];
   });
 
   useEffect(() => {
-    localStorage.setItem("carrito", JSON.stringify(carrito));
-  }, [carrito]);
+    setCarrito(JSON.parse(localStorage.getItem(storageKey)) || []);
+  }, [storageKey]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(carrito));
+  }, [carrito, storageKey]);
 
   // Agregar producto al carrito
   const agregarAlCarrito = (producto) => {

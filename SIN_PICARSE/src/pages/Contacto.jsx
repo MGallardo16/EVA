@@ -7,13 +7,35 @@ export default function Contacto() {
   const [mensaje, setMensaje] = useState("");
   const [enviado, setEnviado] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setEnviado(true);
-    setNombre("");
-    setCorreo("");
-    setAsunto("");
-    setMensaje("");
+    try {
+      const response = await fetch("http://localhost:8080/api/v1/mensajes-contacto", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombre,
+          correo,
+          asunto,
+          mensaje,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al enviar el mensaje");
+      }
+
+      setEnviado(true);
+      setNombre("");
+      setCorreo("");
+      setAsunto("");
+      setMensaje("");
+    } catch (error) {
+      console.error("Error al enviar mensaje de contacto:", error);
+      alert("Hubo un error al enviar el mensaje. Inténtalo nuevamente.");
+    }
   };
 
   return (

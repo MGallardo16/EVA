@@ -1,35 +1,15 @@
-import { useState } from "react";
-
-const ARTICULOS_BLOG = [
-  {
-    id: 1,
-    titulo: "Los 5 mejores juegos de mesa para iniciar en el hobby",
-    fecha: "2026-10-15",
-    imagen: "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=800",
-    resumen: "Descubre títulos fáciles de aprender, dinámicos y perfectos para reunir a familiares y amigos en la mesa.",
-    contenido: `
-      <p>Entrar al mundo de los juegos de mesa modernos puede parecer abrumador con tantas opciones disponibles, pero existen títulos diseñados especialmente para explicar sus reglas en menos de 10 minutos.</p>
-      <p><strong>1. Catan:</strong> El clásico moderno de negociación y gestión de recursos que nunca falla en las tardes de juego.</p>
-      <p><strong>2. Dixit:</strong> Ideal para despertar la creatividad e imaginación con ilustraciones sorprendentes.</p>
-      <p><strong>3. Ticket to Ride:</strong> Conecta ciudades en el mapa recolectando cartas de trenes en partidas llenas de tensión amistosa.</p>
-    `,
-  },
-  {
-    id: 2,
-    titulo: "¿Cómo cuidar y proteger tus cartas y componentes?",
-    fecha: "2026-11-02",
-    imagen: "https://images.unsplash.com/photo-1606167668584-78701c57f13d?w=800",
-    resumen: "Guía práctica sobre fundas protectoras, organizadores y almacenamiento para mantener tus juegos como nuevos.",
-    contenido: `
-      <p>Si disfrutas de juegos con mucho barajeo como <em>Exploding Kittens</em> o juegos de construcción de mazos, proteger tus cartas alarga su vida útil por años.</p>
-      <p>Recomendamos utilizar <strong>fundas (sleeves)</strong> del tamaño exacto de cada carta, evitar bebidas directamente sobre el tablero y guardar las cajas en posición horizontal en lugares secos.</p>
-    `,
-  },
-];
+import { useState, useEffect } from "react";
 
 export default function Blog() {
-  const [posts] = useState(ARTICULOS_BLOG);
+  const [posts, setPosts] = useState([]);
   const [postSeleccionado, setPostSeleccionado] = useState(null);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/v1/blogs")
+      .then((res) => res.json())
+      .then((data) => setPosts(data))
+      .catch((err) => console.error("Error al cargar blogs:", err));
+  }, []);
 
   if (postSeleccionado) {
     return (
