@@ -10,6 +10,7 @@ export default function Productos() {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [productoDetalle, setProductoDetalle] = useState(null);
+  const [productoEditandoId, setProductoEditandoId] = useState(null);
   const [nuevoProducto, setNuevoProducto] = useState({
     nombre: "",
     descripcion: "",
@@ -26,7 +27,8 @@ export default function Productos() {
   const fetchData = async () => {
     try {
       const prodData = await api.getProductos();
-      setProductos(prodData || []);
+      const ordenados = (prodData || []).sort((a, b) => a.id - b.id);
+      setProductos(ordenados);
 
       const catData = await api.getCategorias();
       setCategorias(catData || []);
@@ -51,7 +53,26 @@ export default function Productos() {
     reader.readAsDataURL(file);
   };
 
-  const handleAgregar = async (e) => {
+  const seleccionarParaEditar = (producto) => {
+    setProductoEditandoId(producto.id);
+    setNuevoProducto({
+      nombre: producto.nombre || "",
+      descripcion: producto.descripcion || "",
+      precio: producto.precio ?? "",
+      stock: producto.stock ?? "",
+      categoriaId: producto.categoria?.id || "",
+      imagen: producto.imagen || "",
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const cancelarEdicion = () => {
+    setProductoEditandoId(null);
+    setNuevoProducto({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "", imagen: "" });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleGuardar = async (e) => {
     e.preventDefault();
     const payload = {
       nombre: nuevoProducto.nombre,
@@ -63,13 +84,21 @@ export default function Productos() {
     };
 
     try {
-      await api.crearProducto(payload);
-      setNuevoProducto({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "", imagen: "" });
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (productoEditandoId) {
+        await api.actualizarProducto(productoEditandoId, payload);
+        if (productoDetalle?.id === productoEditandoId) {
+          setProductoDetalle(null);
+        }
+        cancelarEdicion();
+      } else {
+        await api.crearProducto(payload);
+        setNuevoProducto({ nombre: "", descripcion: "", precio: "", stock: "", categoriaId: "", imagen: "" });
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
       fetchData();
     } catch (error) {
-      console.error("Error al agregar producto:", error);
-      alert(error.message || "Error al crear producto");
+      console.error("Error al guardar producto:", error);
+      alert(error.message || "Error al guardar producto");
     }
   };
 
@@ -81,6 +110,7 @@ export default function Productos() {
       await api.eliminarProducto(id);
       setProductos((prev) => prev.filter((p) => p.id !== id));
       if (productoDetalle?.id === id) setProductoDetalle(null);
+      if (productoEditandoId === id) cancelarEdicion();
       e.target.reset();
     } catch (error) {
       console.error("Error al eliminar producto:", error);
@@ -124,12 +154,22 @@ export default function Productos() {
                   <td className="text-success fw-bold">${Number(p.precio).toLocaleString("es-CL")}</td>
                   <td>{p.stock} u.</td>
                   <td>
-                    <button
-                      className="btn btn-outline-info btn-sm"
-                      onClick={() => setProductoDetalle(p)}
-                    >
-                      Ver detalle
-                    </button>
+                    <div className="d-flex gap-2">
+                      <button
+                        className="btn btn-outline-info btn-sm"
+                        onClick={() => setProductoDetalle(p)}
+                      >
+                        Ver detalle
+                      </button>
+                      {esAdmin && (
+                        <button
+                          className="btn btn-outline-warning btn-sm"
+                          onClick={() => seleccionarParaEditar(p)}
+                        >
+                          Editar
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -196,8 +236,17 @@ export default function Productos() {
 
           <div className="col-md-8">
             <div className="card bg-dark text-white border-secondary p-3 shadow-sm">
-              <h5 className="card-title mb-3">Agregar Nuevo Producto</h5>
-              <form onSubmit={handleAgregar}>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="card-title mb-0">
+                  {productoEditandoId ? `Modificar Producto #${productoEditandoId}` : "Agregar Nuevo Producto"}
+                </h5>
+                {productoEditandoId && (
+                  <button type="button" className="btn btn-sm btn-outline-secondary" onClick={cancelarEdicion}>
+                    Cancelar edición
+                  </button>
+                )}
+              </div>
+              <form onSubmit={handleGuardar}>
                 <div className="row g-2 mb-2">
                   <div className="col-md-6">
                     <input
@@ -266,7 +315,7 @@ export default function Productos() {
                     data-bs-theme="dark"
                     className="form-control bg-secondary text-white border-0"
                     onChange={handleCargarImagen}
-                />
+                  />
                   {nuevoProducto.imagen && (
                     <div className="mt-2 d-flex align-items-center gap-3">
                       <img
@@ -290,7 +339,7 @@ export default function Productos() {
                 </div>
 
                 <button type="submit" className="btn btn-success w-100 rounded-pill fw-bold">
-                  Guardar Producto
+                  {productoEditandoId ? "Actualizar Producto" : "Guardar Producto"}
                 </button>
               </form>
             </div>
